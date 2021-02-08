@@ -2,7 +2,7 @@
 ! Written by Mark A. Herndon
 ! Lehigh University, Department of Mechanical Engineering and Mechanics
 ! Subroutines for 5th order accurate Runge-Kutta integration for systems of 
-! ordinerary differential equations
+! ordinary differential equations
 ! Thomas algorithm for solution to tri-diagonal matrix equation
 !=================================================================================
 MODULE mod_numerical_routines
