@@ -3,9 +3,9 @@
 ! Lehigh University, Department of Mechanical Engineering and Mechanics
 !=================================================================================
 PROGRAM MAIN
-    USE mod_file_io, ONLY : read_input_data
+    USE mod_file_io, ONLY : read_input_data, WRITE_SOLUTION_FILE
     USE mod_global,  ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, Z, VORT_0, &
-                            VORT_new, n, m
+                            VORT_new, n, m, tau
     USE mod_numerical_routines, ONLY : DERIVATIVE, RK5
     IMPLICIT NONE
     PROCEDURE(DERIVATIVE) :: VORTEX_DERIV
@@ -14,8 +14,10 @@ PROGRAM MAIN
 
     IF ( GE == .TRUE. ) THEN
         CALL SET_GROUND_EFFECT
-    END IF    
-    
+    END IF 
+   
+    tau(1) = 0.0
+
     DO i = 1, nvt
         VORT_0(i)     = Y_0(i)
         VORT_0(i+nvt) = Z_0(i)
@@ -31,9 +33,11 @@ PROGRAM MAIN
             Y(i,n+1)        = VORT_new(i)
             Z(i,n+1)        = VORT_new(i+nvt)
         END DO
-        WRITE(*,*) Y(1,n), Y(2,n)
+        tau(n+1) = dt*REAL(n,KIND=8)
     END DO
-    
+   
+    CALL WRITE_SOLUTION_FILE 
+ 
 END PROGRAM MAIN
 !=================================================================================
 SUBROUTINE SET_GROUND_EFFECT

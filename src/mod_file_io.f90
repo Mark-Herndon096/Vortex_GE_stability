@@ -41,4 +41,17 @@ SUBROUTINE read_input_data
 
 END SUBROUTINE read_input_data
 !=================================================================================
+SUBROUTINE WRITE_SOLUTION_FILE
+    USE mod_global, ONLY : nv, nvt, nt, Y, Z, tau
+    IMPLICIT NONE
+    
+    OPEN(1,FILE='vortices.x',FORM='UNFORMATTED',ACCESS='STREAM',STATUS='REPLACE',ACTION='WRITE')
+    WRITE(1) nvt, nt
+    WRITE(1) Y
+    WRITE(1) Z
+    WRITE(1) tau
+    CLOSE(1)
+    
+END SUBROUTINE WRITE_SOLUTION_FILE
+!=================================================================================
 END MODULE mod_file_io

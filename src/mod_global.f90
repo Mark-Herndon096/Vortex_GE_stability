@@ -42,6 +42,7 @@ MODULE mod_global
     INTEGER :: n    !< Time integration indexing integer
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_0
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_new
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: tau
 CONTAINS
 
 !=================================================================================
@@ -67,7 +68,8 @@ SUBROUTINE ALLOCATE_VARIABLES
     m = nvt*2
     ALLOCATE(VORT_0(m))
     ALLOCATE(VORT_new(m))
-    
+    ALLOCATE(tau(nt))
+
 END SUBROUTINE ALLOCATE_VARIABLES
 !=================================================================================
 END MODULE mod_global
