@@ -4,13 +4,17 @@
 !=================================================================================
 MODULE mod_global
     IMPLICIT NONE
+    ! CONSTANTS
+    REAL(KIND=8), PARAMETER :: pi = 4.0*ATAN(1.0)
+
     ! USER-SPECIFIED PARAMETERS 
     INTEGER :: nt   !< # of time steps
     INTEGER :: nv   !< # of vortices in real plane
     INTEGER :: nvt  !< Total # of vortices in ground-image system
     LOGICAL :: GE   !< In Ground Effect Logical 
     
-    REAL(KIND=8) :: a !< Vortex core radius (Will be an array for unequal core radii in future studies)
+    REAL(KIND=8) :: dt  !< Time step 
+    REAL(KIND=8) :: a   !< Vortex core radius (Will be an array for unequal core radii in future studies)
 
     ! USER-SPECIFIED INITIAL CONDITIONS
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: Y_0    !< Y initial locations 
@@ -31,13 +35,13 @@ MODULE mod_global
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: GAM    !< Array containing vortex circulation
 
     ! DERIVED PARAMETERS
-    REAL(KIND=8) :: dt    !< Time step 
     REAL(KIND=8) :: b     !< Initial vortex separation (relevant to vortex pair cases)
     REAL(KIND=8) :: h     !< Initial vortex height relative to global coordinate system
-
+    INTEGER      :: m     !< Dimension of VORT array
     ! GLOBAL VARIABLES 
     INTEGER :: n    !< Time integration indexing integer
-
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_0
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_new
 CONTAINS
 
 !=================================================================================
@@ -59,6 +63,11 @@ SUBROUTINE ALLOCATE_VARIABLES
     ! ALLOCATE VORTEX CIRCULATION ARRAY
     ALLOCATE(GAM(nvt))
 
+    ! ALLOCATE VORT ARRAYS FOR RK5 INTEGRATOR
+    m = nvt*2
+    ALLOCATE(VORT_0(m))
+    ALLOCATE(VORT_new(m))
+    
 END SUBROUTINE ALLOCATE_VARIABLES
 !=================================================================================
 END MODULE mod_global

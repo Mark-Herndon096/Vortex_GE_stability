@@ -5,8 +5,8 @@
 	nt    = 1000  !< # of time steps
   dt    = 0.01  !< Size of time step 
 	nv  = 2       !< # of vortices in real plane
-	nvt = 2       !< # Total # of vortices in ground-image system
-	GE  = .FALSE.  !< Ground effect logical
+	nvt = 4       !< # Total # of vortices in ground-image system
+	GE  = .TRUE.  !< Ground effect logical
 /&END
 
 ! Geometry of vortex configuration -- place vortices at desired initial positions 
