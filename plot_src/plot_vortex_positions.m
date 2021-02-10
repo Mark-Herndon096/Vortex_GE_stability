@@ -25,11 +25,10 @@ end
 tau = fread(fid,nt,'double');
 
 %% Plot Vortex trajectories
+figure(1)
+plot(Y(1,:),Z(1,:),'k-','LineWidth',1.5), hold on
+plot(Y(2,:),Z(2,:),'r-','LineWidth',1.5), hold on
+plot(Y(5,:),Z(5,:),'b-','LineWidth',1.5), hold on
+plot(Y(6,:),Z(6,:),'k--','LineWidth',1.5)
 
-plot(Y(1,:),Z(1,:),'k-','LineWidth',2), hold on
-plot(Y(2,:),Z(2,:),'k-','LineWidth',2), hold on
-%plot(Y(3,:),Z(3,:),'k--','LineWidth',2), hold on
-%plot(Y(4,:),Z(4,:),'k--','LineWidth',2)
-xlim([-5,5])
-ylim([0,5])
 grid on
