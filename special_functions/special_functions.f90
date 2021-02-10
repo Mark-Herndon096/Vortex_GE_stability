@@ -47,22 +47,22 @@ END FUNCTION BESSELJ0
 FUNCTION BESSELJ1(x)
     USE mod_function_interface, ONLY : j11, j12, j13, j14, j15,  &
                                        j16,                      &
-                                       xj00, xj10, pio4, twoopi, &
+                                       xj01, xj11, pio4, twoopi, &
                                        RATIONAL_FIT,             &
                                        ASYMPTOTIC_APPROX
     IMPLICIT NONE
     REAL(KIND=8), INTENT(INOUT) :: x
-    REAL(KIND=8)                :: BESSELJ0
+    REAL(KIND=8)                :: BESSELJ1
     REAL(KIND=8)                :: ax, xx, np, dp, nq, dq, y, ff
     INTEGER                     :: n = 7
     INTEGER                     :: m = 5
 
     IF ( ABS(x) .LE. 8.0 ) THEN
         CALL RATIONAL_FIT(x, j11, j12, n, np, dp, y)
-        BESSELJ0 = np*(y-xj00)*(y-xj10)/dp
+        BESSELJ1 = x*np*(y-xj01)*(y-xj11)/dp
     END IF
     IF ( ABS(x) .GT. 8.0 ) THEN
-        ax = ABS(x); xx = ax - pio4; ff = 1.d0;
+        ax = ABS(x); ff = 3.d0; xx = ax - ff*pio4;
         CALL ASYMPTOTIC_APPROX(x, j13, j14, j15, j16, m, np, dp, nq, dq, ff)
         BESSELJ1 = SQRT(twoopi/ax)*(COS(xx)*np/dp - (8.d0/ax)*SIN(xx)*nq/dq)
     END IF

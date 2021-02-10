@@ -39,24 +39,24 @@ MODULE mod_function_interface
         END SUBROUTINE ASYMPTOTIC_APPROX
     END INTERFACE
 
-    ! GLOBAL CONSTANTS FOR USE IN FUNCTION ROUTINES
-    ! CONSTANTS ARE COEFFICIENTS DERIVED FROM RATIONAL APPROXIMATIONS AND
-    ! ASYMPTOTIC APPROXIMATIONS OF BESSEL FUNCTIONS
-    !    References:
-    !    John F. Hart
-    !    Computer Approximations
-    !    year: 1978
-    !   
-    !    William H. Press, Saul A. Teuukolsky, William T. Vetterling, 
-    !    Brian P. Flannery
-    !    NUMERICAL RECIPES: The Art of Scientific Computing
-    !    ISBN: 978-0-521-88068-8
-    !
-    !    Milton Abramowitz, Irene Stegun,
-    !    Handbook of Mathematical Functions,
-    !    National Bureau of Standards, 1964,
-    !    ISBN: 0-486-61272-4,
-    !    LC: QA47.A34.
+!   GLOBAL CONSTANTS FOR USE IN FUNCTION ROUTINES
+!   CONSTANTS ARE COEFFICIENTS DERIVED FROM RATIONAL APPROXIMATIONS AND
+!   ASYMPTOTIC APPROXIMATIONS OF BESSEL FUNCTIONS
+!      References:
+!      John F. Hart
+!      Computer Approximations
+!      year: 1978
+!     
+!      William H. Press, Saul A. Teuukolsky, William T. Vetterling, 
+!      Brian P. Flannery
+!      NUMERICAL RECIPES: The Art of Scientific Computing
+!      ISBN: 978-0-521-88068-8
+!  
+!      Milton Abramowitz, Irene Stegun,
+!      Handbook of Mathematical Functions,
+!      National Bureau of Standards, 1964,
+!      ISBN: 0-486-61272-4,
+!      LC: QA47.A34.
 
     REAL(KIND=8), PARAMETER :: xj00   =  5.783185962946785
     REAL(KIND=8), PARAMETER :: xj10   =  3.047126234366209e1
@@ -119,7 +119,7 @@ MODULE mod_function_interface
     	                                  1.271526296341915e-7,  & 
                                           2.566305357932989e-10, &
     	                                  3.477378203574266e-13, &
-                                          2.593535427519985e-16};
+                                          2.593535427519985e-16/)
 
     REAL(KIND=8), DIMENSION(5) :: j13 = (/1.0,                   &
                                           1.014039111045313,     &
@@ -144,7 +144,83 @@ MODULE mod_function_interface
                                           3.626494789275638e-1,  &
     	                                  2.761695824829316e-2,  &
                                           3.240517192670181e-4/)
-!==================================================================
+
+    
+    REAL(KIND=8), DIMENSION(5) :: k01 = (/1.0,                   &
+                                          2.346487949187396e-1,  &
+                                          1.187082088663404e-2,  &
+        	                              2.150707366040937e-4,  &
+                                          1.425433617130587e-6/)
+    
+    REAL(KIND=8), DIMENSION(3) :: k02 = (/9.847324170755358e-1,  &
+                                          1.518396076767770e-2,  &
+        	                              8.362215678646257e-5/)
+    
+    REAL(KIND=8), DIMENSION(5) :: k03 = (/1.159315156584126e-1,  &
+                                          2.770731240515333e-1,  &
+        	                              2.066458134619875e-2,  &
+                                          4.574734709978264e-4,  &
+                                          3.454715527986737e-6/)
+    
+    REAL(KIND=8), DIMENSION(3) :: k04 = (/9.836249671709183e-1,  &
+                                          1.627693622304549e-2,  &
+        	                              9.809660603621949e-5/)
+    
+    REAL(KIND=8), DIMENSION(8) :: k05 = (/1.253314137315499,     &
+                                          1.475731032429900e1,   &
+        	                              6.123767403223466e1,   &
+                                          1.121012633939949e2,   &
+                                          9.285288485892228e1,   &
+        	                              3.198289277679660e1,   &
+                                          3.595376024148513,     &
+                                          6.160228690102976e-2/)
+    
+    REAL(KIND=8), DIMENSION(8) :: k06 = (/1.0,                   &
+                                          1.189963006673403e1,   &
+                                          5.027773590829784e1,   &
+        	                              9.496513373427093e1,   &
+                                          8.318077493230258e1,   &
+                                          3.181399777449301e1,   &
+        	                              4.443672926432041,     &
+                                          1.408295601966600e-1/)
+    
+    REAL(KIND=8), DIMENSION(5) :: k11 = (/0.5,                   &
+                                          5.598072040178741e-2,  &
+                                          1.818666382168295e-3,  &
+        	                              2.397509908859959e-5,  &
+                                          1.239567816344855e-7/)
+    
+    REAL(KIND=8), DIMENSION(3) :: k12 = (/9.870202601341150e-1,  &
+                                          1.292092053534579e-2,  &
+        	                              5.881933053917096e-5/)
+    
+    REAL(KIND=8), DIMENSION(5) :: k13 = (/-3.079657578292062e-1, &
+                                          -8.109417631822442e-2, &
+        	                              -3.477550948593604e-3, &
+                                          -5.385594871975406e-5, &
+                                          -3.110372465429008e-7/)
+    
+    REAL(KIND=8), DIMENSION(3) :: k14 = (/9.861813171751389e-1,  &
+                                          1.375094061153160e-2,  &
+        	                              6.774221332947002e-5/)
+    
+    REAL(KIND=8), DIMENSION(8) :: k15 = (/1.253314137315502,     &
+                                          1.457171340220454e1,   &
+                 		 	              6.063161173098803e1,   &
+                                          1.147386690867892e2,   &
+                                          1.040442011439181e2,   &
+    			                          4.356596656837691e1,   &
+                                          7.265230396353690,     &
+                                          3.144418558991021e-1/)
+    
+    REAL(KIND=8), DIMENSION(8) :: k16 = (/1.0,                   &
+                                          1.125154514806458e1,   &
+                                          4.427488496597630e1,   &
+    	                                  7.616113213117645e1,   &
+                                          5.863377227890893e1,   &
+                                          1.850303673841586e1,   &
+    	                                  1.857244676566022,     &
+                                          2.538540887654872e-2/)
 !==================================================================
 !==================================================================
 END MODULE mod_function_interface

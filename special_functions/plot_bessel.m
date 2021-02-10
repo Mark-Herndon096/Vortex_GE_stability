@@ -13,7 +13,7 @@ x = fread(fid,ni,'double');
 y = fread(fid,ni,'double');
 
 for i = 1:ni
-    y2(i) = besselj(0,x(i));
+    y2(i) = besselj(1,x(i));
 end
 
 

@@ -1,5 +1,5 @@
 PROGRAM MAIN
-    USE mod_function_interface, ONLY : BESSELJ0
+    USE mod_function_interface, ONLY : BESSELJ1
     IMPLICIT NONE
     INTEGER      :: ni, i
     REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: x, y
@@ -16,7 +16,7 @@ PROGRAM MAIN
 
     DO i = 1, ni
         x(i) = REAL(i-1,KIND=8)*dx
-        y(i) = BESSELJ0(x(i))
+        y(i) = BESSELJ1(x(i))
     END DO 
   
     
