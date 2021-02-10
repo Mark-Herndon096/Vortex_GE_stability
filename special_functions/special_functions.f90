@@ -1,4 +1,6 @@
 !=============================================================================
+! Written by Mark A. Herndon
+! Lehigh University, Department of Mechanical Engineering and Mechanics
 !=============================================================================
 FUNCTION BESSELJ0(x)
     USE mod_function_interface, ONLY : j01, j02, j03, j04, j05,  &

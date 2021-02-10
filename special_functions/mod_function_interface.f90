@@ -30,6 +30,24 @@ MODULE mod_function_interface
     END INTERFACE
 
     ! GLOBAL CONSTANTS FOR USE IN FUNCTION ROUTINES
+    ! CONSTANTS ARE COEFFICIENTS DERIVED FROM RATIONAL APPROXIMATIONS AND
+    ! ASYMPTOTIC APPROXIMATIONS OF BESSEL FUNCTIONS
+    !    References:
+    !    John F. Hart
+    !    Computer Approximations
+    !    year: 1978
+    !   
+    !    William H. Press, Saul A. Teuukolsky, William T. Vetterling, 
+    !    Brian P. Flannery
+    !    NUMERICAL RECIPES: The Art of Scientific Computing
+    !    ISBN: 978-0-521-88068-8
+    !
+    !    Milton Abramowitz, Irene Stegun,
+    !    Handbook of Mathematical Functions,
+    !    National Bureau of Standards, 1964,
+    !    ISBN: 0-486-61272-4,
+    !    LC: QA47.A34.
+
     REAL(KIND=8), PARAMETER :: xj00   =  5.783185962946785
     REAL(KIND=8), PARAMETER :: xj10   =  3.047126234366209e1
     REAL(KIND=8), PARAMETER :: xj01   =  1.468197064212389e1
