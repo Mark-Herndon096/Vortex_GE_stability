@@ -11,16 +11,32 @@ MODULE mod_function_interface
     ! UTILITY PROGRAM INTERFACES 
     INTERFACE
         SUBROUTINE RATIONAL_FIT(x, r, s, n, np, dp, y)
-            REAL(KIND=8),               INTENT(IN) :: x
-            REAL(KIND=8), DIMENSION(n), INTENT(IN) :: r
-            REAL(KIND=8), DIMENSION(n), INTENT(IN) :: s
-            INTEGER,                    INTENT(IN) :: n
-            REAL(KIND=8), INTENT(OUT)              :: np, dp, y
+            REAL(KIND=8),               INTENT(IN)  :: x
+            REAL(KIND=8), DIMENSION(n), INTENT(IN)  :: r
+            REAL(KIND=8), DIMENSION(n), INTENT(IN)  :: s
+            INTEGER,                    INTENT(IN)  :: n
+            REAL(KIND=8),               INTENT(OUT) :: np, dp, y
         END SUBROUTINE RATIONAL_FIT
     END INTERFACE
 
+    INTERFACE
+        SUBROUTINE ASYMPTOTIC_APPROX(x, rn, rd, sn, sd, n, np, dp, nq, dq, ff)
+            REAL(KIND=8),               INTENT(IN)  :: x, ff
+            REAL(KIND=8), DIMENSION(n), INTENT(IN)  :: rn, rd
+            REAL(KIND=8), DIMENSION(n), INTENT(IN)  :: sn, sd
+            INTEGER,                    INTENT(IN)  :: n
+            REAL(KIND=8),               INTENT(OUT) :: np, dp, nq, dq
+        END SUBROUTINE ASYMPTOTIC_APPROX
+    END INTERFACE
 
     ! GLOBAL CONSTANTS FOR USE IN FUNCTION ROUTINES
+    REAL(KIND=8), PARAMETER :: xj00   =  5.783185962946785
+    REAL(KIND=8), PARAMETER :: xj10   =  3.047126234366209e1
+    REAL(KIND=8), PARAMETER :: xj01   =  1.468197064212389e1
+    REAL(KIND=8), PARAMETER :: xj11   =  4.921845632169460e1
+    REAL(KIND=8), PARAMETER :: twoopi =  0.6366197723675813
+    REAL(KIND=8), PARAMETER :: pio4   =  0.7853981633974483
+
     REAL(KIND=8), DIMENSION(7) :: j01 = (/1.682397144220462e-4,   &
                                           2.058861258868952e-5,   &
                                           5.288947320067750e-7,   &
