@@ -1,12 +1,25 @@
 MODULE mod_function_interface
     IMPLICIT NONE
-    ! FUNCTION INTERFACES 
+    ! FUNCTION INTERFACES -- SPECIAL FUNCTIONS 
     INTERFACE
         FUNCTION BESSELJ0(x)
-            REAL(KIND=8), INTENT(IN) :: x
-            REAL(KIND=8)             :: BESSELJ0
+            REAL(KIND=8), INTENT(INOUT) :: x
+            REAL(KIND=8)                :: BESSELJ0
         END FUNCTION BESSELJ0
     END INTERFACE
+
+    ! UTILITY PROGRAM INTERFACES 
+    INTERFACE
+        SUBROUTINE RATIONAL_FIT(x, r, s, n, np, dp, y)
+            REAL(KIND=8),               INTENT(IN) :: x
+            REAL(KIND=8), DIMENSION(n), INTENT(IN) :: r
+            REAL(KIND=8), DIMENSION(n), INTENT(IN) :: s
+            INTEGER,                    INTENT(IN) :: n
+            REAL(KIND=8), INTENT(OUT)              :: np, dp, y
+        END SUBROUTINE RATIONAL_FIT
+    END INTERFACE
+
+
     ! GLOBAL CONSTANTS FOR USE IN FUNCTION ROUTINES
     REAL(KIND=8), DIMENSION(7) :: j01 = (/1.682397144220462e-4,   &
                                           2.058861258868952e-5,   &
@@ -36,13 +49,18 @@ MODULE mod_function_interface
     	                                   1.529954477721284e-2,  &
                                            1.168931211650012e-4/)
 
-    REAL(KIND=8), DIMENSION(5) ::j05  = (/-1.562499999999992e-2,  &
-                                          -1.920039317065641e-2,  &
-    	                                  -5.827951791963418e-3,  &
-                                          -4.372674978482726e-4,  &
-                                          -3.895839560412374e-6/)
+    REAL(KIND=8), DIMENSION(5) :: j05  = (/-1.562499999999992e-2, &
+                                           -1.920039317065641e-2, &
+    	                                   -5.827951791963418e-3, &
+                                           -4.372674978482726e-4, &
+                                           -3.895839560412374e-6/)
 
-const double  Bessel::j0qd[]  = {1.0,1.237980436358390,3.838793938147116e-1,
-    	                         3.100323481550864e-2,4.165515825072393e-4};
-
+    REAL(KIND=8), DIMENSION(5) :: j06  = (/1.0,                   &
+                                           1.237980436358390,     & 
+                                           3.838793938147116e-1,  &
+    	                                   3.100323481550864e-2,  &
+                                           4.165515825072393e-4/)
+!==================================================================
+!==================================================================
+!==================================================================
 END MODULE mod_function_interface
