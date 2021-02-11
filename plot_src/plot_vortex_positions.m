@@ -2,7 +2,7 @@
 %  Written by Mark A. Herndon
 % Lehigh University, Department of Mechanical Engineering and Mechanics
 
-dir   = '/home/markherndon/Vortex_Codes/FORTRAN/src/';
+dir   = '/home/markherndon/Vortex_Codes/FORTRAN/';
 fname = sprintf('%svortices.x',dir);
 
 fid = fopen(fname,'r','ieee-le');
