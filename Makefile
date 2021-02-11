@@ -1,5 +1,6 @@
-.SUFFIXES:
-.SUFFIXES: .o .f90 .c
+
+SRC_DIR = src
+GSL_DIR = GSL_INTERFACE
 
 # Compiler (ifort, gfortran)
 FC = ifort
@@ -7,9 +8,10 @@ CC = icc
 
 # Libraries 
 COMPILER = $(shell $(FC) --version | head -n1 | cut -d' ' -f1)
-INCLUDE   = #-I/custom_builds/GSL/include
-LDFLAGS   = #-L/custom_builds/GSL/lib -lgsl -lgslcblas -lm
-LIBRARIES = #$(INCLDUE) $(LDFLAGS)
+INCLUDE   = -I/custom_builds/GSL/include
+LDFLAGS   = -L/custom_builds/GSL/lib -lgsl -lgslcblas -lm
+LIBRARIES = $(INCLDUE) $(LDFLAGS)
+VPATH=GSL_INTERFACE:src
 # ifort and gfortran take different compiler flags
 ifeq ($(COMPILER),ifort)
    # Intel
@@ -34,32 +36,26 @@ endif
 
 # Executable name
 EXEC_NAME = vortex_solver.exe
-GSL_INC = -I/home/markherndon/Vortex_Codes/FORTRAN/GSL_INTERFACE/
+
 # Object list
-OBJECTS = mod_global.o                 \
-	  mod_numerical_routines.o     \
-	  mod_file_io.o                \
-	  main.o
-
-.c.o:; $(CC) $(CFLAGS) -c -o $@ $< 
-.f.o:; $(FC) $(COMPFLAGS) -c -o $@ $< 
-.f90.o:; $(FC) $(COMPFLAGS) -c -o $@ $< $(GSL_INC) 
-
-src_objs: $(OBJECTS)
-
-
-solver: $(OBJECTS)
-	$(FC) -o $(EXEC_NAME) $(COMPFLAGS) $(OBJECTS) $(LIBRARIES)
-
-debug: $(OBJECTS)
+OBJECTS = $(GSL_DIR)/special_function_wrapper.o   \
+	  $(GSL_DIR)/special_function_interface.o \
+	  $(SRC_DIR)/mod_global.o                 \
+	  $(SRC_DIR)/mod_numerical_routines.o     \
+	  $(SRC_DIR)/mod_file_io.o                \
+	  $(SRC_DIR)/main.o
+solver:
+	$(MAKE) -C $(GSL_DIR) gsl_objs
+	$(MAKE) -C $(SRC_DIR) src_objs
 	$(FC) -o $(EXEC_NAME) $(COMPFLAGS) $(OBJECTS) $(LIBRARIES)
 
 clean:
-	rm -rf *.o *.mod $(EXEC_NAME)
+	$(MAKE) -C $(GSL_DIR) clean
+	$(MAKE) -C $(SRC_DIR) clean
 
-## Object dependencies
-#special_function_wrapper.o: special_function_wrapper.c
-#special_function_interface.o: special_function_interface.f90 special_function_wrapper.o
+# Object dependencies
+special_function_wrapper.o: special_function_wrapper.c
+special_function_interface.o: special_function_interface.f90 special_function_wrapper.o
 mod_global.o: mod_global.f90
 mod_numerical_routines.o: mod_numerical_routines.f90
 mod_file_io.o: mod_file_io.f90 mod_global.o

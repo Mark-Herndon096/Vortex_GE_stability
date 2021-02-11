@@ -7,11 +7,13 @@ PROGRAM MAIN
     USE mod_global,  ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, Z, VORT_0, &
                             VORT_new, n, m, tau
     USE mod_numerical_routines, ONLY : DERIVATIVE, RK5
+    USE special_function_interface, ONLY : BESSELJ0, BESSELJ1
     IMPLICIT NONE
     PROCEDURE(DERIVATIVE) :: VORTEX_DERIV
     INTEGER               :: i
     CALL read_input_data
-
+    WRITE(*,*) BESSELJ0(5.d0)
+    WRITE(*,*) BESSELJ1(5.d0)
     IF ( GE == .TRUE. ) THEN
         CALL SET_GROUND_EFFECT
     END IF 

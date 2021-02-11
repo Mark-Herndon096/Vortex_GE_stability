@@ -6,6 +6,7 @@
    and Mechanics */
  
 #include <gsl/gsl_sf_bessel.h>
+#include "special_function_wrapper.h"
 
 double bessel_j0_wrapper(double *x){
 	return gsl_sf_bessel_J0(*x);
