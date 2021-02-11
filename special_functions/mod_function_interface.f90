@@ -20,6 +20,14 @@ MODULE mod_function_interface
     END INTERFACE
 
     INTERFACE
+        FUNCTION BESSELJ(nu,x)
+            INTEGER,      INTENT(IN)    :: nu
+            REAL(KIND=8), INTENT(INOUT) :: x
+            REAL(KIND=8)                :: BESSELJ
+        END FUNCTION BESSELJ
+    END INTERFACE
+
+    INTERFACE
         SUBROUTINE RATIONAL_FIT(x, r, s, n, np, dp, y)
             REAL(KIND=8),               INTENT(IN)  :: x
             REAL(KIND=8), DIMENSION(n), INTENT(IN)  :: r

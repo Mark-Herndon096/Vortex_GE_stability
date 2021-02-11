@@ -69,6 +69,17 @@ FUNCTION BESSELJ1(x)
 END FUNCTION BESSELJ1
 !=============================================================================
 !=============================================================================
+FUNCTION BESSELJ(nu,x)
+    USE mod_function_interface, ONLY : BESSELJ0, BESSELJ1
+    IMPLICIT NONE
+    INTEGER,      INTENT(IN)    :: nu
+    REAL(KIND=8), INTENT(INOUT) :: x
+    REAL(KIND=8)                :: BESSELJ
+
+
+END FUNCTION BESSELJ
+!=============================================================================
+!=============================================================================
 SUBROUTINE RATIONAL_FIT(x, r, s, n, np, dp, y)
     IMPLICIT NONE
     REAL(KIND=8),               INTENT(IN)  :: x
