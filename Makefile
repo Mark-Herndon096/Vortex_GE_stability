@@ -1,3 +1,6 @@
+# INSTALL DIRECTORY
+#install_dir = EXECUTABLES
+
 # Commond source directories
 SRC_DIR = src
 GSL_DIR = GSL_INTERFACE
@@ -8,6 +11,8 @@ CC = icc
 
 # Libraries 
 COMPILER = $(shell $(FC) --version | head -n1 | cut -d' ' -f1)
+
+# These flags needed for GNU GSL library -- path dependent on your system
 INCLUDE   = -I/custom_builds/GSL/include
 LDFLAGS   = -L/custom_builds/GSL/lib -lgsl -lgslcblas -lm
 LIBRARIES = $(INCLDUE) $(LDFLAGS)
@@ -51,4 +56,5 @@ solver:
 clean:
 	$(MAKE) -C $(GSL_DIR) clean
 	$(MAKE) -C $(SRC_DIR) clean
+	rm $(EXEC_NAME)
 

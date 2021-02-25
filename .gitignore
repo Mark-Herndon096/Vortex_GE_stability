@@ -1,4 +1,3 @@
-vortex_solver.exe
-vortices.x
+*.exe
 *.o
 *.mod

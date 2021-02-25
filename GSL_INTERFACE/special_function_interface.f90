@@ -4,7 +4,7 @@
 !   
 !   Created by: Mark A. Herndon
 !   Lehigh University, Department of Mechanical Engineering
-!   and Mechanics */
+!   and Mechanics 
 !================================================================
 MODULE special_function_interface
     IMPLICIT NONE

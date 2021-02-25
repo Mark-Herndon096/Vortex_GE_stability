@@ -2,7 +2,7 @@
 %  Written by Mark A. Herndon
 % Lehigh University, Department of Mechanical Engineering and Mechanics
 
-dir   = '/home/markherndon/Vortex_Codes/FORTRAN/';
+dir   = '/home/markherndon/Vortex_Codes/FORTRAN/DATA/';
 fname = sprintf('%svortices.x',dir);
 
 fid = fopen(fname,'r','ieee-le');
@@ -26,9 +26,6 @@ tau = fread(fid,nt,'double');
 
 %% Plot Vortex trajectories
 figure(1)
-plot(Y(1,:),Z(1,:),'k-','LineWidth',1.5), hold on
-plot(Y(2,:),Z(2,:),'r-','LineWidth',1.5), hold on
-plot(Y(5,:),Z(5,:),'b-','LineWidth',1.5), hold on
-plot(Y(6,:),Z(6,:),'k--','LineWidth',1.5)
-
+plot(Y(1,:),Z(1,:),'k--','LineWidth',1.5), hold on
+plot(Y(2,:),Z(2,:),'r--','LineWidth',1.5)
 grid on

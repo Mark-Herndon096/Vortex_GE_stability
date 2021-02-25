@@ -3,10 +3,10 @@
 ! Lehigh University, Department of Mechanical Engineering and Mechanics
 !=================================================================================
 PROGRAM MAIN
-    USE mod_file_io, ONLY : read_input_data, WRITE_SOLUTION_FILE
-    USE mod_global,  ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, Z, VORT_0, &
-                            VORT_new, n, m, tau
-    USE mod_numerical_routines, ONLY : DERIVATIVE, RK5
+    USE mod_file_io,                ONLY : read_input_data, WRITE_SOLUTION_FILE
+    USE mod_global,                 ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, &
+                                           Z, VORT_0, VORT_new, n, m, tau
+    USE mod_numerical_routines,     ONLY : DERIVATIVE, RK5
     USE special_function_interface, ONLY : BESSELJ0, BESSELJ1
     IMPLICIT NONE
     PROCEDURE(DERIVATIVE) :: VORTEX_DERIV
@@ -66,13 +66,6 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0 
     REAL(KIND=8), DIMENSION(m)                :: VORTEX_DERIV
     ! FUNCTION SPECIFIC VARIABLES AND PARAMETERS    
-    INTEGER                                   :: i, j        !< Loop index integers
-    REAL(KIND=8)                              :: y_mn, z_mn  !< Relative y and z coordinates
-    REAL(KIND=8)                              :: r_mn        !< Relative radius
-    REAL(KIND=8)                              :: sum_y       !< Sum holder for y eq
-    REAL(KIND=8)                              :: sum_z       !< Sum holder for y eq
-    REAL(KIND=8)                              :: sum_eta     !< Sum holder for y eq
-    REAL(KIND=8)                              :: sum_zeta    !< Sum holder for y eq
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: y_temp      !< Temporary y array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: z_temp      !< Temporary z array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: eta_temp    !< Temporary eta array
@@ -82,6 +75,13 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: z_deriv     !< z derivative array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: eta_deriv   !< eta derivative array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: zeta_deriv  !< zeta derivative array
+    INTEGER                                   :: i, j        !< Loop index integers
+    REAL(KIND=8)                              :: y_mn, z_mn  !< Relative y and z coordinates
+    REAL(KIND=8)                              :: r_mn        !< Relative radius
+    REAL(KIND=8)                              :: sum_y       !< Sum holder for y eq
+    REAL(KIND=8)                              :: sum_z       !< Sum holder for y eq
+    REAL(KIND=8)                              :: sum_eta     !< Sum holder for y eq
+    REAL(KIND=8)                              :: sum_zeta    !< Sum holder for y eq
     
     ALLOCATE(y_temp(nvt))
     ALLOCATE(z_temp(nvt))

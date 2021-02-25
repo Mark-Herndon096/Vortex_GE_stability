@@ -2,19 +2,19 @@
 ! Set nv and nvt to same value if not studying ground effect case
 ! Set nvt to 2*nv for ground effect configuration
 &CODE_DATA
-	nt    = 10000  !< # of time steps
-  dt    = 0.01  !< Size of time step 
-	nv  = 4       !< # of vortices in real plane
-	nvt = 8       !< # Total # of vortices in ground-image system
-	GE  = .TRUE.  !< Ground effect logical
+	nt    = 1000  !< # of time steps
+  dt    = 0.01   !< Size of time step 
+	nv  = 2        !< # of vortices in real plane
+	nvt = 4        !< # Total # of vortices in ground-image system
+	GE  = .TRUE.   !< Ground effect logical
 /&END
 
 ! Geometry of vortex configuration -- place vortices at desired initial positions 
 ! Understand your own separation b and initial height h when placing vortices
 ! Values must be non-dimensional 
 &VORTEX_DATA
-  Y_0 = -0.75,-0.5, 0.5, 0.75    !< Y_0 coordinates of vortex 1, vortex 2, ... vortex nv
-  Z_0 =  4.0,  3.0, 3.0, 4.0     !< Z_0 coorindates of vortex 1, vortex 2, ... vortex nv
-  GAM = -1.5, -1.0, 1.0,1.5     !< Circulation orientation for real vortices -- proper strength included later
-  a   =  0.1       !< Vortex core radius (Will be array for unequal radius in future studies)     
+  Y_0 = -0.75, 0.75    !< Y_0 coordinates of vortex 1, vortex 2, ... vortex nv
+  Z_0 =  4.0,  4.0     !< Z_0 coorindates of vortex 1, vortex 2, ... vortex nv
+  GAM = -1.0,  1.0     !< Circulation orientation for real vortices -- proper strength included later
+  a   =  0.1           !< Vortex core radius (Will be array for unequal radius in future studies)     
 /&END
