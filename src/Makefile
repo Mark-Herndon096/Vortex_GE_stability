@@ -1,3 +1,5 @@
+# [[file:../PROJECT.org::*Makefile][Makefile:1]]
+# Makefile for primary src
 .SUFFIXES:
 .SUFFIXES: .o .f90 .c
 
@@ -5,14 +7,14 @@
 FC = ifort
 CC = icc
 
-# Libraries 
+# Libraries
 COMPILER = $(shell $(FC) --version | head -n1 | cut -d' ' -f1)
 
 # ifort and gfortran take different compiler flags
 ifeq ($(COMPILER),ifort)
    # Intel
    COMMONFLAGS =
-   PRODFLAGS = -O3  
+   PRODFLAGS = -O3
 endif
 
 ifeq ($(COMPILER),GNU)
@@ -29,9 +31,9 @@ OBJECTS = mod_global.o                 \
 	  mod_file_io.o                \
 	  main.o
 
-.c.o:; $(CC) $(CFLAGS) -c -o $@ $< 
-.f.o:; $(FC) $(COMPFLAGS) -c -o $@ $< 
-.f90.o:; $(FC) $(COMPFLAGS) -c -o $@ $< $(GSL_INC) 
+.c.o:; $(CC) $(CFLAGS) -c -o $@ $<
+.f.o:; $(FC) $(COMPFLAGS) -c -o $@ $<
+.f90.o:; $(FC) $(COMPFLAGS) -c -o $@ $< $(GSL_INC)
 
 src_objs: $(OBJECTS)
 
@@ -43,3 +45,4 @@ mod_global.o: mod_global.f90
 mod_numerical_routines.o: mod_numerical_routines.f90
 mod_file_io.o: mod_file_io.f90 mod_global.o
 main.o: main.f90 mod_file_io.o mod_global.o mod_numerical_routines.o
+# Makefile:1 ends here

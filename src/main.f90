@@ -1,3 +1,4 @@
+! [[file:../PROJECT.org::*MAIN.F90][MAIN.F90:1]]
 !=================================================================================
 ! Written by Mark A. Herndon
 ! Lehigh University, Department of Mechanical Engineering and Mechanics
@@ -16,8 +17,8 @@ PROGRAM MAIN
     WRITE(*,*) BESSELJ1(5.d0)
     IF ( GE == .TRUE. ) THEN
         CALL SET_GROUND_EFFECT
-    END IF 
-   
+    END IF
+
     tau(1) = 0.0
 
     DO i = 1, nvt
@@ -26,7 +27,7 @@ PROGRAM MAIN
         Y(i,1)        = Y_0(i)
         Z(i,1)        = Z_0(i)
     END DO
-        
+
     DO n = 1, nt
         CALL Rk5(VORT_0,VORT_new,dt,m,VORTEX_DERIV)
         DO i = 1, nvt
@@ -37,9 +38,9 @@ PROGRAM MAIN
         END DO
         tau(n+1) = dt*REAL(n,KIND=8)
     END DO
-   
-    CALL WRITE_SOLUTION_FILE 
- 
+
+    CALL WRITE_SOLUTION_FILE
+
 END PROGRAM MAIN
 !=================================================================================
 SUBROUTINE SET_GROUND_EFFECT
@@ -56,21 +57,21 @@ SUBROUTINE SET_GROUND_EFFECT
 END SUBROUTINE SET_GROUND_EFFECT
 !=================================================================================
 ! VORTEX_DERIV (y_1, y_2, ... , y_nvt, z_1, z_2, ... z_nvt, eta_1, eta_2, ... , eta_nvt
-!               zeta_1, zeta_2, ... , zeta_nvt) 
+!               zeta_1, zeta_2, ... , zeta_nvt)
 !=================================================================================
 FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     USE mod_global, ONLY : GE, pi, nv, nvt, GAM
     IMPLICIT NONE
     INTEGER,                    INTENT(IN)    :: m
     REAL(KIND=8),               INTENT(IN)    :: h, ch
-    REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0 
+    REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0
     REAL(KIND=8), DIMENSION(m)                :: VORTEX_DERIV
-    ! FUNCTION SPECIFIC VARIABLES AND PARAMETERS    
+    ! FUNCTION SPECIFIC VARIABLES AND PARAMETERS
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: y_temp      !< Temporary y array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: z_temp      !< Temporary z array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: eta_temp    !< Temporary eta array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: zeta_temp   !< Temporary zeta array
-    
+
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: y_deriv     !< y derivative array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: z_deriv     !< z derivative array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: eta_deriv   !< eta derivative array
@@ -82,18 +83,25 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     REAL(KIND=8)                              :: sum_z       !< Sum holder for y eq
     REAL(KIND=8)                              :: sum_eta     !< Sum holder for y eq
     REAL(KIND=8)                              :: sum_zeta    !< Sum holder for y eq
-    
+    REAL(KIND=8)                              :: V1_mn       !< First term for eta equation
+    REAL(KIND=8)                              :: V2_mn       !< Second term for eta equation
+    REAL(KIND=8)                              :: V3_mn       !< Third term for eta equation
+    REAL(KIND=8)                              :: V4_mn       !< Fourth term for eta equation
+    REAL(KIND=8)                              :: W1_mn       !< First term for zeta equation
+    REAL(KIND=8)                              :: W2_mn       !< Second term for zeta equation
+    REAL(KIND=8)                              :: W3_mn       !< Third term for zeta equation
+    REAL(KIND=8)                              :: W4_mn       !< Fourth term for zeta equation
     ALLOCATE(y_temp(nvt))
     ALLOCATE(z_temp(nvt))
    ! ALLOCATE(eta_temp(nvt))
    ! ALLOCATE(zeta_temp(nvt))
-    
+
     ALLOCATE(y_deriv(nvt))
     ALLOCATE(z_deriv(nvt))
   !  ALLOCATE(eta_deriv(nvt))
   !  ALLOCATE(zeta_deriv(nvt))
 
-    ! Initialize sum holder values to 0.0    
+    ! Initialize sum holder values to 0.0
     sum_y = 0.0; sum_z = 0.0; sum_eta = 0.0; sum_zeta = 0.0;
 
     ! Map x_0 values into temporary arrays
@@ -103,11 +111,11 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
  !       eta_temp(i)  = x_0(i+2*nvt)
  !       zeta_temp(i) = x_0(i+3*nvt)
     END DO
-    
+
     DO i = 1, nvt
         DO j = 1, nvt
             IF ( i .EQ. j ) THEN
-                CYCLE                
+                CYCLE
             ELSEIF ( i .NE. j ) THEN
                 z_mn  = z_temp(j) - z_temp(i)
                 y_mn  = y_temp(j) - y_temp(i)
@@ -120,8 +128,8 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
         z_deriv(i) = sum_z
         sum_y      = 0.0
         sum_z      = 0.0
-    END DO 
-    
+    END DO
+
     DO i = 1, nvt
         VORTEX_DERIV(i)     = y_deriv(i)
         VORTEX_DERIV(i+nvt) = z_deriv(i)
@@ -137,4 +145,4 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
 !    DEALLOCATE(zeta_deriv)
 END FUNCTION VORTEX_DERIV
 !=================================================================================
-
+! MAIN.F90:1 ends here

@@ -1,24 +1,24 @@
 !=================================================================================
 ! Written by Mark A. Herndon
 ! Lehigh University, Department of Mechanical Engineering and Mechanics
-! Subroutines for 5th order accurate Runge-Kutta integration for systems of 
+! Subroutines for 5th order accurate Runge-Kutta integration for systems of
 ! ordinary differential equations
 ! Thomas algorithm for solution to tri-diagonal matrix equation
 !=================================================================================
 MODULE mod_numerical_routines
-    IMPLICIT NONE 
+    IMPLICIT NONE
     ABSTRACT INTERFACE
         FUNCTION DERIVATIVE(x_0,m,h,ch)
         IMPLICIT NONE
         INTEGER,                    INTENT(IN)    :: m
         REAL(KIND=8),               INTENT(IN)    :: h, ch
-        REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0 
-        REAL(KIND=8), DIMENSION(m)                :: DERIVATIVE 
+        REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0
+        REAL(KIND=8), DIMENSION(m)                :: DERIVATIVE
         END FUNCTION
-    END INTERFACE  
+    END INTERFACE
 CONTAINS
 !=================================================================================
-! RK5 is a 5th order accurate Runge-Kutta scheme based on the Dormand 
+! RK5 is a 5th order accurate Runge-Kutta scheme based on the Dormand
 ! Prince method. Adaptive step sizes will be implemented in the future.
 ! Input require is initial position x_0 as a vector or order m and step size h
 ! DERIV function is required as an external function corresponding to the form
@@ -27,7 +27,7 @@ CONTAINS
 ! Adaptize step size goal: take initial step size and calulate error. If solution
 ! is within ~8-10% of x_0 then grow step size. If error between O(h^4) and O(h^5)
 ! is beyond tolerance --> shrink step size and advance to time n+1 and return
-! for larger step sizes than provided h, interpolate calculated points at nodes 
+! for larger step sizes than provided h, interpolate calculated points at nodes
 !=================================================================================
 SUBROUTINE RK5(x_0,x_new,h,m,DERIV)
     IMPLICIT NONE
@@ -39,19 +39,19 @@ SUBROUTINE RK5(x_0,x_new,h,m,DERIV)
     REAL(KIND=8), DIMENSION(m), INTENT(OUT) :: x_new  ! value at end of integration
     REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: x_O4   ! 4th order accurate solution
     REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: y1, y2, y3, y4, y5, y6
-    REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: k1, k2, k3, k4, k5, k6, k7 
+    REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: k1, k2, k3, k4, k5, k6, k7
     REAL(KIND=8) :: error, tolerance, ch  ! ch represents fractional step size
     ! Butchers Tableau for Dormand-Prince embedded RK5(4) method
-    REAL(KIND=8) :: a21,                                            &   
-                    a31, a32,                                       &   
-                    a41, a42, a43,                                  &   
+    REAL(KIND=8) :: a21,                                            &
+                    a31, a32,                                       &
+                    a41, a42, a43,                                  &
                     a51, a52, a53, a54,                             &
                     a61, a62, a63, a64, a65,                        &
                     a71, a72, a73, a74, a75, a76,                   &
                     b1,  b2,  b3,  b4,  b5,  b6, b7,                &
                     b1_2,  b2_2,  b3_2,  b4_2,  b5_2,  b6_2, b7_2,  &
                     c1,  c2,  c3,  c4,  c5,  c6, c7
-                    
+
     c1  = 0.d0
     c2  = 1.d0/5.d0
     c3  = 3.d0/10.d0
@@ -59,7 +59,7 @@ SUBROUTINE RK5(x_0,x_new,h,m,DERIV)
     c5  = 8.d0/9.d0
     c6  = 1.d0
     c7  = 1.d0
-    
+
     a21 = 1.d0/5.d0
     a31 = 3.d0/40.d0
     a32 = 9.d0/40.d0
@@ -81,7 +81,7 @@ SUBROUTINE RK5(x_0,x_new,h,m,DERIV)
     a74 = 125.d0/192.d0
     a75 = -2187/6784.d0
     a76 = 11.d0/84.d0
-    
+
     b1 = a71
     b2 = a72
     b3 = a73
@@ -89,22 +89,22 @@ SUBROUTINE RK5(x_0,x_new,h,m,DERIV)
     b5 = a75
     b6 = a76
     b7 = 0.d0
-    
-    b1_2 = 5179.d0/57600.d0 
+
+    b1_2 = 5179.d0/57600.d0
     b2_2 = 0.d0
     b3_2 = 7571.d0/16695.d0
     b4_2 = 393.d0/640.d0
     b5_2 = -92097.d0/339200.d0
     b6_2 = 187.d0/2100.d0
     b7_2 = 1.d0/40.d0
-     
-    ALLOCATE(k1(m))   
-    ALLOCATE(k2(m))   
-    ALLOCATE(k3(m))   
-    ALLOCATE(k4(m))   
-    ALLOCATE(k5(m))   
-    ALLOCATE(k6(m))   
-    ALLOCATE(k7(m))   
+
+    ALLOCATE(k1(m))
+    ALLOCATE(k2(m))
+    ALLOCATE(k3(m))
+    ALLOCATE(k4(m))
+    ALLOCATE(k5(m))
+    ALLOCATE(k6(m))
+    ALLOCATE(k7(m))
     ALLOCATE(y1(m))
     ALLOCATE(y2(m))
     ALLOCATE(y3(m))
@@ -136,7 +136,7 @@ SUBROUTINE RK5(x_0,x_new,h,m,DERIV)
     !      x_new = x_0 + h*(b1*k1 + b2*k2 + b3*k3 + b4*k4 + b5*k5 + b6*k6 + b7*k7)
           ! 4th order accurate solution
           x_new  = x_0 + h*(b1_2*k1 + b2_2*k2 + b3_2*k3 + b4_2*k4 + b5_2*k5 + b6_2*k6 + b7_2*k7)
-          
+
           !error = MAXVAL(x_new - x_O4)
 !          WRITE(*,*) 'error : ', error
 
@@ -179,6 +179,6 @@ SUBROUTINE TSOLVE (IL, IU, BB, DD, AA, CC)
         CC(J) = (CC(J) - AA(J)*CC(J+1))/DD(J)
     END DO
     ! SOLUTION STORED IN CC
-END SUBROUTINE TSOLVE 
+END SUBROUTINE TSOLVE
 !=================================================================================
 END MODULE mod_numerical_routines

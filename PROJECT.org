@@ -1,0 +1,661 @@
+#+TITLE: Project
+#+SETUPFILE: /home/markherndon/clones/org-html-themes/org/theme-readtheorg-local.setup
+This vortex filament based research code calculates the time evolution
+of a perturbed vortex system in or out of ground effect, and quantifies
+the stability of the system. This document serves as a master file for the repository
+#+BEGIN_SRC shell :exports both
+#!/bin/bash
+tree ../FORTRAN
+#+END_SRC
+
+#+RESULTS:
+| ../FORTRAN |                            |                                |       |
+| ├──        | DATA                       |                                |       |
+| │          | └──                        | vortices.x                     |       |
+| ├──        | GSL_INTERFACE              |                                |       |
+| │          | ├──                        | Makefile                       |       |
+| │          | ├──                        | special_function_interface.f90 |       |
+| │          | ├──                        | special_function_wrapper.c     |       |
+| │          | └──                        | special_function_wrapper.h     |       |
+| ├──        | input_parameters.dat       |                                |       |
+| ├──        | Makefile                   |                                |       |
+| ├──        | old_special_functions      |                                |       |
+| │          | ├──                        | main.f90                       |       |
+| │          | ├──                        | Makefile                       |       |
+| │          | ├──                        | mod_function_interface.f90     |       |
+| │          | ├──                        | plot_bessel.m                  |       |
+| │          | └──                        | special_functions.f90          |       |
+| ├──        | plot_src                   |                                |       |
+| │          | └──                        | plot_vortex_positions.m        |       |
+| ├──        | PROJECT.html               |                                |       |
+| ├──        | PROJECT.org                |                                |       |
+| └──        | src                        |                                |       |
+| ├──        | input_parameters.dat       |                                |       |
+| ├──        | main.f90                   |                                |       |
+| ├──        | Makefile                   |                                |       |
+| ├──        | mod_file_io.f90            |                                |       |
+| ├──        | mod_global.f90             |                                |       |
+| └──        | mod_numerical_routines.f90 |                                |       |
+|            |                            |                                |       |
+| 5          | directories,               | 21                             | files |
+
+* Makefile
+#+BEGIN_SRC makefile :tangle Makefile :comments link :results silent
+# Head Makefile for vortex_solver.exe
+# INSTALL DIRECTORY
+#install_dir = EXECUTABLES
+# Comment on Makefile
+# Commond source directories
+SRC_DIR = src
+GSL_DIR = GSL_INTERFACE
+
+# Compiler (ifort, gfortran)
+FC = ifort
+CC = icc
+
+# Libraries
+COMPILER = $(shell $(FC) --version | head -n1 | cut -d' ' -f1)
+
+# These flags needed for GNU GSL library -- path dependent on your system
+INCLUDE   = -I/custom_builds/GSL/include
+LDFLAGS   = -L/custom_builds/GSL/lib -lgsl -lgslcblas -lm
+LIBRARIES = $(INCLDUE) $(LDFLAGS)
+
+
+# ifort and gfortran take different compiler flags
+ifeq ($(COMPILER),ifort)
+   # Intel
+   COMMONFLAGS =
+   PRODFLAGS = -O3
+endif
+
+ifeq ($(COMPILER),GNU)
+   # gfortran
+   COMMONFLAGS = -ffree-line-length-0
+   PRODFLAGS = -O2
+endif
+
+# Set flags for debug or release
+ifeq ($(MAKECMDGOALS),debug)
+   COMPFLAGS = ${COMMONFLAGS} ${DEBUGFLAGS}
+else
+   COMPFLAGS = ${COMMONFLAGS} ${PRODFLAGS}
+endif
+
+# Executable name
+EXEC_NAME = vortex_solver.exe
+
+# Object list
+OBJECTS = $(GSL_DIR)/special_function_wrapper.o   \
+	  $(GSL_DIR)/special_function_interface.o \
+	  $(SRC_DIR)/mod_global.o                 \
+	  $(SRC_DIR)/mod_numerical_routines.o     \
+	  $(SRC_DIR)/mod_file_io.o                \
+	  $(SRC_DIR)/main.o
+solver:
+	$(MAKE) -C $(GSL_DIR) gsl_objs
+	$(MAKE) -C $(SRC_DIR) src_objs
+	$(FC) -o $(EXEC_NAME) $(COMPFLAGS) $(OBJECTS) $(LIBRARIES)
+
+clean:
+	$(MAKE) -C $(GSL_DIR) clean
+	$(MAKE) -C $(SRC_DIR) clean
+	rm $(EXEC_NAME)
+#+END_SRC
+
+* MAIN SRC
+** Makefile
+#+BEGIN_SRC makefile :tangle src/Makefile :comments link
+# Makefile for primary src
+.SUFFIXES:
+.SUFFIXES: .o .f90 .c
+
+# Compiler (ifort, gfortran)
+FC = ifort
+CC = icc
+
+# Libraries
+COMPILER = $(shell $(FC) --version | head -n1 | cut -d' ' -f1)
+
+# ifort and gfortran take different compiler flags
+ifeq ($(COMPILER),ifort)
+   # Intel
+   COMMONFLAGS =
+   PRODFLAGS = -O3
+endif
+
+ifeq ($(COMPILER),GNU)
+   # gfortran
+   COMMONFLAGS = -ffree-line-length-0
+   PRODFLAGS = -O2
+endif
+
+
+GSL_INC = -I/home/markherndon/Vortex_Codes/FORTRAN/GSL_INTERFACE/
+# Object list
+OBJECTS = mod_global.o                 \
+	  mod_numerical_routines.o     \
+	  mod_file_io.o                \
+	  main.o
+
+.c.o:; $(CC) $(CFLAGS) -c -o $@ $<
+.f.o:; $(FC) $(COMPFLAGS) -c -o $@ $<
+.f90.o:; $(FC) $(COMPFLAGS) -c -o $@ $< $(GSL_INC)
+
+src_objs: $(OBJECTS)
+
+clean:
+	rm -rf *.o *.mod $(EXEC_NAME)
+
+## Object dependencies
+mod_global.o: mod_global.f90
+mod_numerical_routines.o: mod_numerical_routines.f90
+mod_file_io.o: mod_file_io.f90 mod_global.o
+main.o: main.f90 mod_file_io.o mod_global.o mod_numerical_routines.o
+#+END_SRC
+
+
+** INPUT PARAMETERS.DAT
+#+BEGIN_SRC f90 :tangle input_parameters.dat :comments link
+! Input file for vortex filament method solver
+! Set nv and nvt to same value if not studying ground effect case
+! Set nvt to 2*nv for ground effect configuration
+&CODE_DATA
+	nt    = 1000  !< # of time steps
+  dt    = 0.01   !< Size of time step
+	nv  = 2        !< # of vortices in real plane
+	nvt = 4        !< # Total # of vortices in ground-image system
+	GE  = .TRUE.   !< Ground effect logical
+/&END
+
+! Geometry of vortex configuration -- place vortices at desired initial positions
+! Understand your own separation b and initial height h when placing vortices
+! Values must be non-dimensional
+&VORTEX_DATA
+  Y_0 = -0.75, 0.75    !< Y_0 coordinates of vortex 1, vortex 2, ... vortex nv
+  Z_0 =  4.0,  4.0     !< Z_0 coorindates of vortex 1, vortex 2, ... vortex nv
+  GAM = -1.0,  1.0     !< Circulation orientation for real vortices -- proper strength included later
+  a   =  0.1           !< Vortex core radius (Will be array for unequal radius in future studies)
+/&END
+
+#+END_SRC
+** MAIN.F90
+#+BEGIN_SRC f90 :tangle src/main.f90 :comments link
+!=================================================================================
+! Written by Mark A. Herndon
+! Lehigh University, Department of Mechanical Engineering and Mechanics
+!=================================================================================
+PROGRAM MAIN
+    USE mod_file_io,                ONLY : read_input_data, WRITE_SOLUTION_FILE
+    USE mod_global,                 ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, &
+                                           Z, VORT_0, VORT_new, n, m, tau
+    USE mod_numerical_routines,     ONLY : DERIVATIVE, RK5
+    USE special_function_interface, ONLY : BESSELJ0, BESSELJ1
+    IMPLICIT NONE
+    PROCEDURE(DERIVATIVE) :: VORTEX_DERIV
+    INTEGER               :: i
+    CALL read_input_data
+    WRITE(*,*) BESSELJ0(5.d0)
+    WRITE(*,*) BESSELJ1(5.d0)
+    IF ( GE == .TRUE. ) THEN
+        CALL SET_GROUND_EFFECT
+    END IF
+
+    tau(1) = 0.0
+
+    DO i = 1, nvt
+        VORT_0(i)     = Y_0(i)
+        VORT_0(i+nvt) = Z_0(i)
+        Y(i,1)        = Y_0(i)
+        Z(i,1)        = Z_0(i)
+    END DO
+
+    DO n = 1, nt
+        CALL Rk5(VORT_0,VORT_new,dt,m,VORTEX_DERIV)
+        DO i = 1, nvt
+            VORT_0(i)       = VORT_new(i)
+            VORT_0(i+nvt)   = VORT_new(i+nvt)
+            Y(i,n+1)        = VORT_new(i)
+            Z(i,n+1)        = VORT_new(i+nvt)
+        END DO
+        tau(n+1) = dt*REAL(n,KIND=8)
+    END DO
+
+    CALL WRITE_SOLUTION_FILE
+
+END PROGRAM MAIN
+!=================================================================================
+SUBROUTINE SET_GROUND_EFFECT
+    USE mod_global, ONLY : nv, nvt, Y_0, Z_0, GAM
+    IMPLICIT NONE
+    INTEGER :: j
+
+    DO j = nv+1, nvt
+        Y_0(j) =  Y_0(j-nv)
+        Z_0(j) = -Z_0(j-nv)
+        GAM(j) = -GAM(j-nv)
+    END DO
+
+END SUBROUTINE SET_GROUND_EFFECT
+!=================================================================================
+! VORTEX_DERIV (y_1, y_2, ... , y_nvt, z_1, z_2, ... z_nvt, eta_1, eta_2, ... , eta_nvt
+!               zeta_1, zeta_2, ... , zeta_nvt)
+!=================================================================================
+FUNCTION VORTEX_DERIV(x_0,m,h,ch)
+    USE mod_global, ONLY : GE, pi, nv, nvt, GAM
+    IMPLICIT NONE
+    INTEGER,                    INTENT(IN)    :: m
+    REAL(KIND=8),               INTENT(IN)    :: h, ch
+    REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0
+    REAL(KIND=8), DIMENSION(m)                :: VORTEX_DERIV
+    ! FUNCTION SPECIFIC VARIABLES AND PARAMETERS
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: y_temp      !< Temporary y array
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: z_temp      !< Temporary z array
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: eta_temp    !< Temporary eta array
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: zeta_temp   !< Temporary zeta array
+
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: y_deriv     !< y derivative array
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: z_deriv     !< z derivative array
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: eta_deriv   !< eta derivative array
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: zeta_deriv  !< zeta derivative array
+    INTEGER                                   :: i, j        !< Loop index integers
+    REAL(KIND=8)                              :: y_mn, z_mn  !< Relative y and z coordinates
+    REAL(KIND=8)                              :: r_mn        !< Relative radius
+    REAL(KIND=8)                              :: sum_y       !< Sum holder for y eq
+    REAL(KIND=8)                              :: sum_z       !< Sum holder for y eq
+    REAL(KIND=8)                              :: sum_eta     !< Sum holder for y eq
+    REAL(KIND=8)                              :: sum_zeta    !< Sum holder for y eq
+    REAL(KIND=8)                              :: V1_mn       !< First term for eta equation
+    REAL(KIND=8)                              :: V2_mn       !< Second term for eta equation
+    REAL(KIND=8)                              :: V3_mn       !< Third term for eta equation
+    REAL(KIND=8)                              :: V4_mn       !< Fourth term for eta equation
+    REAL(KIND=8)                              :: W1_mn       !< First term for zeta equation
+    REAL(KIND=8)                              :: W2_mn       !< Second term for zeta equation
+    REAL(KIND=8)                              :: W3_mn       !< Third term for zeta equation
+    REAL(KIND=8)                              :: W4_mn       !< Fourth term for zeta equation
+    ALLOCATE(y_temp(nvt))
+    ALLOCATE(z_temp(nvt))
+   ! ALLOCATE(eta_temp(nvt))
+   ! ALLOCATE(zeta_temp(nvt))
+
+    ALLOCATE(y_deriv(nvt))
+    ALLOCATE(z_deriv(nvt))
+  !  ALLOCATE(eta_deriv(nvt))
+  !  ALLOCATE(zeta_deriv(nvt))
+
+    ! Initialize sum holder values to 0.0
+    sum_y = 0.0; sum_z = 0.0; sum_eta = 0.0; sum_zeta = 0.0;
+
+    ! Map x_0 values into temporary arrays
+    DO i = 1, nvt
+        y_temp(i)    = x_0(i)
+        z_temp(i)    = x_0(i+nvt)
+ !       eta_temp(i)  = x_0(i+2*nvt)
+ !       zeta_temp(i) = x_0(i+3*nvt)
+    END DO
+
+    DO i = 1, nvt
+        DO j = 1, nvt
+            IF ( i .EQ. j ) THEN
+                CYCLE
+            ELSEIF ( i .NE. j ) THEN
+                z_mn  = z_temp(j) - z_temp(i)
+                y_mn  = y_temp(j) - y_temp(i)
+                r_mn  = SQRT(y_mn**2 + z_mn**2)
+                sum_y = sum_y + (GAM(j)/(2.0*pi))*z_mn/r_mn**2
+                sum_z = sum_z - (GAM(j)/(2.0*pi))*y_mn/r_mn**2
+            END IF
+        END DO
+        y_deriv(i) = sum_y
+        z_deriv(i) = sum_z
+        sum_y      = 0.0
+        sum_z      = 0.0
+    END DO
+
+    DO i = 1, nvt
+        VORTEX_DERIV(i)     = y_deriv(i)
+        VORTEX_DERIV(i+nvt) = z_deriv(i)
+    END DO
+
+    DEALLOCATE(y_temp)
+    DEALLOCATE(z_temp)
+!    DEALLOCATE(eta_temp)
+!    DEALLOCATE(zeta_temp)
+    DEALLOCATE(y_deriv)
+    DEALLOCATE(z_deriv)
+!    DEALLOCATE(eta_deriv)
+!    DEALLOCATE(zeta_deriv)
+END FUNCTION VORTEX_DERIV
+!=================================================================================
+#+END_SRC
+** MOD GLOBAL.F90
+#+BEGIN_SRC f90 :tangle src/mod_global.f90
+!=================================================================================
+! Written by Mark A. Herndon
+! Lehigh University, Department of Mechanical Engineering and Mechanics
+!=================================================================================
+MODULE mod_global
+    IMPLICIT NONE
+    ! CONSTANTS
+    REAL(KIND=8), PARAMETER :: pi = 4.0*ATAN(1.0)
+
+    ! USER-SPECIFIED PARAMETERS
+    INTEGER :: nt   !< # of time steps
+    INTEGER :: nv   !< # of vortices in real plane
+    INTEGER :: nvt  !< Total # of vortices in ground-image system
+    LOGICAL :: GE   !< In Ground Effect Logical
+
+    REAL(KIND=8) :: dt  !< Time step
+    REAL(KIND=8) :: a   !< Vortex core radius (Will be an array for unequal core radii in future studies)
+
+    ! USER-SPECIFIED INITIAL CONDITIONS
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: Y_0    !< Y initial locations
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: Z_0    !< Z initial locations
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: eta_0  !< eta inital perturbation amplitude
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: zeta_0 !< zeta initial perturbation amplitude
+
+    ! VORTEX POSITION AND PERTURBATION AMPLITUDE ARRAYS
+    ! DIMENSION(nvt,nt) --> Ex. Y(vortex index, time index) == position of
+    ! vortex (vortex index) at t = (time index)
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:,:) :: Y    !< Y locations
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:,:) :: Z    !< Z locations
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:,:) :: eta  !< eta perturbation amplitude
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:,:) :: zeta !< zeta perturbation amplitude
+
+    ! VORTEX CIRCULATION STRENGTH AND ORIENTATION
+    ! DIMENSION(nvt) --> Ex. GAM(vortex index 1) ...
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: GAM    !< Array containing vortex circulation
+
+    ! DERIVED PARAMETERS
+    REAL(KIND=8) :: b     !< Initial vortex separation (relevant to vortex pair cases)
+    REAL(KIND=8) :: h     !< Initial vortex height relative to global coordinate system
+    INTEGER      :: m     !< Dimension of VORT array
+    ! GLOBAL VARIABLES
+    INTEGER :: n    !< Time integration indexing integer
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_0
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_new
+    REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: tau
+
+CONTAINS
+
+!=================================================================================
+SUBROUTINE ALLOCATE_VARIABLES
+    IMPLICIT NONE
+
+    ! ALLOCATE INITIAL POSITION ARRAYS
+    ALLOCATE(Y_0(nvt))
+    ALLOCATE(Z_0(nvt))
+    ALLOCATE(eta_0(nvt))
+    ALLOCATE(zeta_0(nvt))
+
+    ! ALLOCATE VORTEX POSITION AND PERTURBATION AMPLITUDE HISTORY ARRAYS
+    ALLOCATE(Y(nvt,nt))
+    ALLOCATE(Z(nvt,nt))
+    ALLOCATE(eta(nvt,nt))
+    ALLOCATE(zeta(nvt,nt))
+
+    ! ALLOCATE VORTEX CIRCULATION ARRAY
+    ALLOCATE(GAM(nvt))
+
+    ! ALLOCATE VORT ARRAYS FOR RK5 INTEGRATOR
+    m = nvt*2
+    ALLOCATE(VORT_0(m))
+    ALLOCATE(VORT_new(m))
+    ALLOCATE(tau(nt))
+
+END SUBROUTINE ALLOCATE_VARIABLES
+!=================================================================================
+END MODULE mod_global
+
+#+END_SRC
+** MOD FILE IO.F90
+#+BEGIN_SRC fortran :tangle src/mod_file_io.f90
+!=================================================================================
+! Written by Mark A. Herndon
+! Lehigh University, Department of Mechanical Engineering and Mechanics
+!=================================================================================
+MODULE mod_file_io
+    IMPLICIT NONE
+    INTEGER :: SOL_WRITE_FREQ, s
+    CHARACTER(:), ALLOCATABLE :: input_file_contents
+CONTAINS
+
+!=================================================================================
+SUBROUTINE read_input_data
+    USE mod_global, ONLY : nt, dt, nv, nvt, GE, &
+                           Y_0, Z_0, GAM, a,    &
+                           ALLOCATE_VARIABLES
+    IMPLICIT NONE
+    INTEGER :: i, i2
+
+    NAMELIST /CODE_DATA/ nt, dt, nv, nvt, GE
+    NAMELIST /VORTEX_DATA/ Y_0, Z_0, GAM, a
+
+    INQUIRE ( FILE = 'input_parameters.dat', SIZE=s )
+    ALLOCATE ( CHARACTER(LEN=s) :: input_file_contents )
+
+    OPEN(UNIT=3,FILE='input_parameters.dat',ACCESS='STREAM',ACTION='READ',STATUS='OLD')
+    READ(3) input_file_contents
+    CLOSE(3)
+
+    DO i = 1, s
+        IF (input_file_contents(i:i) == '!' ) THEN
+           i2 = i + INDEX(input_file_contents(i:),ACHAR(10))-2
+            input_file_contents(i:i2) = ''
+        END IF
+    END DO
+
+    READ ( input_file_contents, NML=CODE_DATA )
+
+    CALL ALLOCATE_VARIABLES
+
+    READ ( input_file_contents, NML=VORTEX_DATA )
+
+END SUBROUTINE read_input_data
+!=================================================================================
+SUBROUTINE WRITE_SOLUTION_FILE
+    USE mod_global, ONLY : nv, nvt, nt, Y, Z, tau
+    IMPLICIT NONE
+
+    OPEN(1,FILE='DATA/vortices.x',FORM='UNFORMATTED',ACCESS='STREAM',STATUS='REPLACE',ACTION='WRITE')
+    WRITE(1) nvt, nt
+    WRITE(1) Y
+    WRITE(1) Z
+    WRITE(1) tau
+    CLOSE(1)
+
+END SUBROUTINE WRITE_SOLUTION_FILE
+!=================================================================================
+END MODULE mod_file_io
+#+END_SRC
+
+** MOD NUMERICAL ROUTINES.F90
+#+BEGIN_SRC fortran :tangle src/mod_numerical_routines.f90
+!=================================================================================
+! Written by Mark A. Herndon
+! Lehigh University, Department of Mechanical Engineering and Mechanics
+! Subroutines for 5th order accurate Runge-Kutta integration for systems of
+! ordinary differential equations
+! Thomas algorithm for solution to tri-diagonal matrix equation
+!=================================================================================
+MODULE mod_numerical_routines
+    IMPLICIT NONE
+    ABSTRACT INTERFACE
+        FUNCTION DERIVATIVE(x_0,m,h,ch)
+        IMPLICIT NONE
+        INTEGER,                    INTENT(IN)    :: m
+        REAL(KIND=8),               INTENT(IN)    :: h, ch
+        REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0
+        REAL(KIND=8), DIMENSION(m)                :: DERIVATIVE
+        END FUNCTION
+    END INTERFACE
+CONTAINS
+!=================================================================================
+! RK5 is a 5th order accurate Runge-Kutta scheme based on the Dormand
+! Prince method. Adaptive step sizes will be implemented in the future.
+! Input require is initial position x_0 as a vector or order m and step size h
+! DERIV function is required as an external function corresponding to the form
+! of ABSTRACT INTERFACE DERIVATIVE
+!
+! Adaptize step size goal: take initial step size and calulate error. If solution
+! is within ~8-10% of x_0 then grow step size. If error between O(h^4) and O(h^5)
+! is beyond tolerance --> shrink step size and advance to time n+1 and return
+! for larger step sizes than provided h, interpolate calculated points at nodes
+!=================================================================================
+SUBROUTINE RK5(x_0,x_new,h,m,DERIV)
+    IMPLICIT NONE
+    PROCEDURE(DERIVATIVE) :: DERIV   ! ABSTRACT INTERFACE DERIVATIVE => DERIV
+    INTEGER :: n
+    INTEGER, INTENT(INOUT) :: m      ! Order of equations
+    REAL(KIND=8), INTENT(INOUT) :: h ! Initial step size
+    REAL(KIND=8), DIMENSION(m), INTENT(INOUT)  :: x_0 ! Starting point
+    REAL(KIND=8), DIMENSION(m), INTENT(OUT) :: x_new  ! value at end of integration
+    REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: x_O4   ! 4th order accurate solution
+    REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: y1, y2, y3, y4, y5, y6
+    REAL(KIND=8), DIMENSION(:), ALLOCATABLE :: k1, k2, k3, k4, k5, k6, k7
+    REAL(KIND=8) :: error, tolerance, ch  ! ch represents fractional step size
+    ! Butchers Tableau for Dormand-Prince embedded RK5(4) method
+    REAL(KIND=8) :: a21,                                            &
+                    a31, a32,                                       &
+                    a41, a42, a43,                                  &
+                    a51, a52, a53, a54,                             &
+                    a61, a62, a63, a64, a65,                        &
+                    a71, a72, a73, a74, a75, a76,                   &
+                    b1,  b2,  b3,  b4,  b5,  b6, b7,                &
+                    b1_2,  b2_2,  b3_2,  b4_2,  b5_2,  b6_2, b7_2,  &
+                    c1,  c2,  c3,  c4,  c5,  c6, c7
+
+    c1  = 0.d0
+    c2  = 1.d0/5.d0
+    c3  = 3.d0/10.d0
+    c4  = 4.d0/5.d0
+    c5  = 8.d0/9.d0
+    c6  = 1.d0
+    c7  = 1.d0
+
+    a21 = 1.d0/5.d0
+    a31 = 3.d0/40.d0
+    a32 = 9.d0/40.d0
+    a41 = 44.d0/45.d0
+    a42 = -56.d0/15.d0
+    a43 = 32.d0/9.d0
+    a51 = 19372.d0/6561.d0
+    a52 = -25360.d0/2187.d0
+    a53 = 64448.d0/6561.d0
+    a54 = -212.d0/729.d0
+    a61 = 9017.d0/3168.d0
+    a62 = -355.d0/33.d0
+    a63 = 46732.d0/5247.d0
+    a64 = 49.d0/176.d0
+    a65 = -5103.d0/18656.d0
+    a71 = 35.d0/384.d0
+    a72 = 0.d0
+    a73 = 500.d0/1113.d0
+    a74 = 125.d0/192.d0
+    a75 = -2187/6784.d0
+    a76 = 11.d0/84.d0
+
+    b1 = a71
+    b2 = a72
+    b3 = a73
+    b4 = a74
+    b5 = a75
+    b6 = a76
+    b7 = 0.d0
+
+    b1_2 = 5179.d0/57600.d0
+    b2_2 = 0.d0
+    b3_2 = 7571.d0/16695.d0
+    b4_2 = 393.d0/640.d0
+    b5_2 = -92097.d0/339200.d0
+    b6_2 = 187.d0/2100.d0
+    b7_2 = 1.d0/40.d0
+
+    ALLOCATE(k1(m))
+    ALLOCATE(k2(m))
+    ALLOCATE(k3(m))
+    ALLOCATE(k4(m))
+    ALLOCATE(k5(m))
+    ALLOCATE(k6(m))
+    ALLOCATE(k7(m))
+    ALLOCATE(y1(m))
+    ALLOCATE(y2(m))
+    ALLOCATE(y3(m))
+    ALLOCATE(y4(m))
+    ALLOCATE(y5(m))
+    ALLOCATE(y6(m))
+    ALLOCATE(x_O4(m))
+          ch = c1*h
+          k1 = DERIV(x_0,m,h,ch)
+          y1 = x_0 + h*a21*k1
+          ch = c2*h
+          k2 = DERIV(y1,m,h,ch)
+          y2 = x_0 + h*(a31*k1 + a32*k2)
+          ch = c3*h
+          k3 = DERIV(y2,m,h,ch)
+          y3 = x_0 + h*(a41*k1 + a42*k2 + a43*k3)
+          ch = c4*h
+          k4 = DERIV(y3,m,h,ch)
+          y4 = x_0 + h*(a51*k1 + a52*k2 + a53*k3 + a54*k4)
+          ch = c5*h
+          k5 = DERIV(y4,m,h,ch)
+          y5 = x_0 + h*(a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5)
+          ch = c6*h
+          k6 = DERIV(y5,m,h,ch)
+          y6 = x_0 + h*(a71*k1 + a72*k2 + a73*k3 + a74*k4 + a75*k5 +a76*k6)
+          ch = c7*h
+          k7 = DERIV(y6,m,h,ch)
+          ! 5th order accurate solution
+    !      x_new = x_0 + h*(b1*k1 + b2*k2 + b3*k3 + b4*k4 + b5*k5 + b6*k6 + b7*k7)
+          ! 4th order accurate solution
+          x_new  = x_0 + h*(b1_2*k1 + b2_2*k2 + b3_2*k3 + b4_2*k4 + b5_2*k5 + b6_2*k6 + b7_2*k7)
+
+          !error = MAXVAL(x_new - x_O4)
+!          WRITE(*,*) 'error : ', error
+
+    DEALLOCATE(k1)
+    DEALLOCATE(k2)
+    DEALLOCATE(k3)
+    DEALLOCATE(k4)
+    DEALLOCATE(k5)
+    DEALLOCATE(k6)
+    DEALLOCATE(k7)
+    DEALLOCATE(y1)
+    DEALLOCATE(y2)
+    DEALLOCATE(y3)
+    DEALLOCATE(y4)
+    DEALLOCATE(y5)
+    DEALLOCATE(y6)
+    DEALLOCATE(x_O4)
+END SUBROUTINE RK5
+!=================================================================================
+SUBROUTINE TSOLVE (IL, IU, BB, DD, AA, CC)
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: IL, IU
+    REAL(KIND=8), DIMENSION(IL:IU), INTENT(IN) :: AA, BB
+    REAL(KIND=8), DIMENSION(IL:IU), INTENT(INOUT) :: CC, DD
+
+    INTEGER :: LP, I, J
+    REAL(KIND=8) :: R
+
+    LP = IL + 1
+    ! LU DECOMPOSITION AND FORWARD SUBSTITUTION FOR CC(I)
+    DO I = LP, IU
+        R = BB(I)/DD(I-1)
+        DD(I) = DD(I) - R*AA(I-1)
+        CC(I) = CC(I) - R*CC(I-1)
+    END DO
+    ! BACKWARD SUBSTITUTION
+    CC(IU) = CC(IU)/DD(IU)
+    DO I = LP, IU
+        J = IU - I + IL
+        CC(J) = (CC(J) - AA(J)*CC(J+1))/DD(J)
+    END DO
+    ! SOLUTION STORED IN CC
+END SUBROUTINE TSOLVE
+!=================================================================================
+END MODULE mod_numerical_routines
+#+END_SRC
+
+* GSL INTERFACE
+* PLOT SRC

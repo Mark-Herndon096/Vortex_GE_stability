@@ -1,6 +1,8 @@
+# [[file:PROJECT.org::*Makefile][Makefile:1]]
+# Head Makefile for vortex_solver.exe
 # INSTALL DIRECTORY
 #install_dir = EXECUTABLES
-
+# Comment on Makefile
 # Commond source directories
 SRC_DIR = src
 GSL_DIR = GSL_INTERFACE
@@ -9,7 +11,7 @@ GSL_DIR = GSL_INTERFACE
 FC = ifort
 CC = icc
 
-# Libraries 
+# Libraries
 COMPILER = $(shell $(FC) --version | head -n1 | cut -d' ' -f1)
 
 # These flags needed for GNU GSL library -- path dependent on your system
@@ -22,7 +24,7 @@ LIBRARIES = $(INCLDUE) $(LDFLAGS)
 ifeq ($(COMPILER),ifort)
    # Intel
    COMMONFLAGS =
-   PRODFLAGS = -O3  
+   PRODFLAGS = -O3
 endif
 
 ifeq ($(COMPILER),GNU)
@@ -57,4 +59,4 @@ clean:
 	$(MAKE) -C $(GSL_DIR) clean
 	$(MAKE) -C $(SRC_DIR) clean
 	rm $(EXEC_NAME)
-
+# Makefile:1 ends here
