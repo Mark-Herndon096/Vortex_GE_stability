@@ -7,10 +7,13 @@ PROGRAM MAIN
     USE mod_file_io,                ONLY : read_input_data, WRITE_SOLUTION_FILE
     USE mod_global,                 ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, &
                                            Z, VORT_0, VORT_new, n, m, tau
-    USE mod_numerical_routines,     ONLY : DERIVATIVE, RK5
+    USE mod_numerical_routines,     ONLY : DERIVATIVE, RK5, root_function
     USE special_function_interface, ONLY : BESSELJ0, BESSELJ1
     IMPLICIT NONE
     PROCEDURE(DERIVATIVE) :: VORTEX_DERIV
+    PROCEDURE(root_function) :: BESSEL_ROOT
+    PROCEDURE(root_function) :: DISPERSION
+    PROCEDURE(root_function) :: VALIDATE
     INTEGER               :: i
     CALL read_input_data
     WRITE(*,*) BESSELJ0(5.d0)
@@ -60,13 +63,14 @@ END SUBROUTINE SET_GROUND_EFFECT
 !               zeta_1, zeta_2, ... , zeta_nvt)
 !=================================================================================
 FUNCTION VORTEX_DERIV(x_0,m,h,ch)
-    USE mod_global, ONLY : GE, pi, nv, nvt, GAM
+    USE mod_global, ONLY : GE, pi, nv, nvt, GAM, mutual_induction
     IMPLICIT NONE
     INTEGER,                    INTENT(IN)    :: m
     REAL(KIND=8),               INTENT(IN)    :: h, ch
     REAL(KIND=8), DIMENSION(m), INTENT(IN)    :: x_0
     REAL(KIND=8), DIMENSION(m)                :: VORTEX_DERIV
     ! FUNCTION SPECIFIC VARIABLES AND PARAMETERS
+    PROCEDURE(mutual_induction)               :: PSI, PHI    !< Special functions
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: y_temp      !< Temporary y array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: z_temp      !< Temporary z array
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:)   :: eta_temp    !< Temporary eta array
@@ -91,15 +95,16 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     REAL(KIND=8)                              :: W2_mn       !< Second term for zeta equation
     REAL(KIND=8)                              :: W3_mn       !< Third term for zeta equation
     REAL(KIND=8)                              :: W4_mn       !< Fourth term for zeta equation
+
     ALLOCATE(y_temp(nvt))
     ALLOCATE(z_temp(nvt))
-   ! ALLOCATE(eta_temp(nvt))
-   ! ALLOCATE(zeta_temp(nvt))
+    ALLOCATE(eta_temp(nvt))
+    ALLOCATE(zeta_temp(nvt))
 
     ALLOCATE(y_deriv(nvt))
     ALLOCATE(z_deriv(nvt))
-  !  ALLOCATE(eta_deriv(nvt))
-  !  ALLOCATE(zeta_deriv(nvt))
+    ALLOCATE(eta_deriv(nvt))
+    ALLOCATE(zeta_deriv(nvt))
 
     ! Initialize sum holder values to 0.0
     sum_y = 0.0; sum_z = 0.0; sum_eta = 0.0; sum_zeta = 0.0;
@@ -108,8 +113,8 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     DO i = 1, nvt
         y_temp(i)    = x_0(i)
         z_temp(i)    = x_0(i+nvt)
- !       eta_temp(i)  = x_0(i+2*nvt)
- !       zeta_temp(i) = x_0(i+3*nvt)
+        eta_temp(i)  = x_0(i+2*nvt)
+        zeta_temp(i) = x_0(i+3*nvt)
     END DO
 
     DO i = 1, nvt
@@ -120,6 +125,9 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
                 z_mn  = z_temp(j) - z_temp(i)
                 y_mn  = y_temp(j) - y_temp(i)
                 r_mn  = SQRT(y_mn**2 + z_mn**2)
+
+
+
                 sum_y = sum_y + (GAM(j)/(2.0*pi))*z_mn/r_mn**2
                 sum_z = sum_z - (GAM(j)/(2.0*pi))*y_mn/r_mn**2
             END IF
@@ -137,12 +145,82 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
 
     DEALLOCATE(y_temp)
     DEALLOCATE(z_temp)
-!    DEALLOCATE(eta_temp)
-!    DEALLOCATE(zeta_temp)
+    DEALLOCATE(eta_temp)
+    DEALLOCATE(zeta_temp)
     DEALLOCATE(y_deriv)
     DEALLOCATE(z_deriv)
-!    DEALLOCATE(eta_deriv)
-!    DEALLOCATE(zeta_deriv)
+    DEALLOCATE(eta_deriv)
+    DEALLOCATE(zeta_deriv)
 END FUNCTION VORTEX_DERIV
 !=================================================================================
+!===========================================================================
+FUNCTION BESSEL_ROOT(x)
+    USE special_function_interface, ONLY : BESSELJ1
+    IMPLICIT NONE
+    REAL(KIND=8), INTENT(IN) :: x
+    REAL(KIND=8)             :: BESSEL_ROOT
+    REAL(KIND=8)             :: y
+
+    y = BESSELJ1(x)
+    BESSEL_ROOT = y    
+END FUNCTION
+!===========================================================================
+!===========================================================================
+FUNCTION DISPERSION(beta)
+    USE special_function_interface, ONLY : BESSELJ0, BESSELJ1, BESSELJN, &
+                                           BESSELK0, BESSELK1, BESSELKN
+    USE mod_global, ONLY : ka
+    IMPLICIT NONE
+    REAL(KIND=8), INTENT(IN) :: beta
+    REAL(KIND=8)             :: DISPERSION
+    REAL(KIND=8)             :: J0, J1, J2, J1_p 
+    REAL(KIND=8)             :: K0, K1, K2, K1_p 
+
+    J0 = BESSELJ0(beta); J1 = BESSELJ1(beta); J2 = BESSELJN(2,beta);
+    K0 = BESSELK0(ka);   K1 = BESSELK1(ka);   K2 = BESSELKN(2,ka);
+
+    J1_p = (J0 - J2)/2.d0;
+    K1_p = (K0 + K2)/2.d0;
+
+    DISPERSION = (1.d0/beta)*(J1_p/J1) + K1_p/(ka*K1) + SQRT(beta**2 + (ka)**2)/(ka*beta**2) 
+END FUNCTION
+!===========================================================================
+!===========================================================================
+FUNCTION VALIDATE(beta)
+    USE special_function_interface, ONLY : BESSELJ0, BESSELJ1, BESSELJN, &
+                                           BESSELK0, BESSELK1, BESSELKN
+    USE mod_global, ONLY : ka
+    IMPLICIT NONE
+    REAL(KIND=8), INTENT(IN) :: beta
+    REAL(KIND=8)             :: VALIDATE
+    REAL(KIND=8)             :: J0, J1, J2, J1_p 
+    REAL(KIND=8)             :: K0, K1, K2, K1_p 
+
+    J0 = BESSELJ0(beta); J1 = BESSELJ1(beta); J2 = BESSELJN(2,beta);
+    K0 = BESSELK0(ka);   K1 = BESSELK1(ka);   K2 = BESSELKN(2,ka);
+
+    J1_p = (J0 - J2)/2.d0;
+    K1_p = (K0 + K2)/2.d0;
+
+    VALIDATE = (1.d0/beta)*(J1_p/J1) + K1_p/(ka*K1) + SQRT(beta**2 + (ka)**2)/(ka*beta**2) 
+END FUNCTION
+!===========================================================================
+FUNCTION PSI(beta)
+    USE special_function_interface, ONLY : BESSELK0, BESSELK1
+    IMPLICIT NONE
+    REAL(KIND=8), INTENT(IN) :: beta
+    REAL(KIND=8)             :: PSI
+
+    PSI = (beta**2)*BESSELK0(ABS(beta)) + ABS(beta)*BESSELK1(ABS(beta))
+END FUNCTION 
+!===========================================================================
+FUNCTION PHI(beta)
+    USE special_function_interface, ONLY : BESSELKN
+    IMPLICIT NONE
+    REAL(KIND=8), INTENT(IN) :: beta
+    REAL(KIND=8)             :: PHI
+
+    PHI = (1.d0/2.d0)*(beta**2)*BESSELKN(2,ABS(beta))
+END FUNCTION 
+!===========================================================================
 ! MAIN.F90:1 ends here

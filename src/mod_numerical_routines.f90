@@ -16,6 +16,13 @@ MODULE mod_numerical_routines
         REAL(KIND=8), DIMENSION(m)                :: DERIVATIVE
         END FUNCTION
     END INTERFACE
+    ABSTRACT INTERFACE
+        FUNCTION root_function(x)
+            IMPLICIT NONE
+            REAL(KIND=8), INTENT(IN) :: x
+            REAL(KIND=8)             :: root_function
+        END FUNCTION
+    END INTERFACE  
 CONTAINS
 !=================================================================================
 ! RK5 is a 5th order accurate Runge-Kutta scheme based on the Dormand
@@ -180,5 +187,40 @@ SUBROUTINE TSOLVE (IL, IU, BB, DD, AA, CC)
     END DO
     ! SOLUTION STORED IN CC
 END SUBROUTINE TSOLVE
+!=================================================================================
+SUBROUTINE BISECTION_METHOD(fun, x, a, b, tol)
+    IMPLICIT NONE
+    REAL(KIND=8), INTENT(INOUT) :: x
+    REAL(KIND=8), INTENT(IN)    :: a
+    REAL(KIND=8), INTENT(IN)    :: b
+    REAL(KIND=8), INTENT(IN)    :: tol
+    PROCEDURE(root_function)    :: fun
+
+    INTEGER                  :: i, j
+    REAL(KIND=8)             :: dx, mid, x1, x2, c, prod
+
+    x1 = a; x2 = b;
+    
+    DO i = 1, 60
+        mid  = (x1 + x2)/2.d0;
+        prod = fun(x1)*fun(mid);
+        IF ( prod .LE. 0.d0 ) THEN
+            x2  = mid
+            mid = (x1 + x2)/2.d0
+            dx  = ABS(x2 - x1);
+        ELSE IF ( prod .GT. 0.d0 ) THEN
+            x1  = mid;
+            mid = (x1 + x2)/2.d0;
+            dx  = ABS(x1 - x2);
+        END IF
+        
+        IF ( dx .LE. tol ) THEN
+            EXIT
+        END IF
+    END DO
+    
+    x = mid;
+        
+END SUBROUTINE BISECTION_METHOD
 !=================================================================================
 END MODULE mod_numerical_routines

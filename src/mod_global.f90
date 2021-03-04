@@ -15,6 +15,7 @@ MODULE mod_global
 
     REAL(KIND=8) :: dt  !< Time step
     REAL(KIND=8) :: a   !< Vortex core radius (Will be an array for unequal core radii in future studies)
+    REAL(KIND=8) :: ka  !< Vortex core radius time wavenumber k
 
     ! USER-SPECIFIED INITIAL CONDITIONS
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: Y_0    !< Y initial locations
@@ -43,7 +44,13 @@ MODULE mod_global
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_0
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: VORT_new
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: tau
-
+    
+    ABSTRACT INTERFACE
+        FUNCTION mutual_induction(beta)
+            REAL(KIND=8), INTENT(IN) :: beta
+            REAl(KIND=8)             :: mutual_induction
+        END FUNCTION
+    END INTERFACE
 CONTAINS
 
 !=================================================================================

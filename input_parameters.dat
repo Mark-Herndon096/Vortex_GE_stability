@@ -4,7 +4,7 @@
 ! Set nvt to 2*nv for ground effect configuration
 &CODE_DATA
 	nt    = 1000  !< # of time steps
-  dt    = 0.01   !< Size of time step
+  dt    = 0.1   !< Size of time step
 	nv  = 2        !< # of vortices in real plane
 	nvt = 4        !< # Total # of vortices in ground-image system
 	GE  = .TRUE.   !< Ground effect logical

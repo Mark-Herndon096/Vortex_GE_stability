@@ -275,13 +275,13 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     REAL(KIND=8)                              :: W4_mn       !< Fourth term for zeta equation
     ALLOCATE(y_temp(nvt))
     ALLOCATE(z_temp(nvt))
-   ! ALLOCATE(eta_temp(nvt))
-   ! ALLOCATE(zeta_temp(nvt))
+    ALLOCATE(eta_temp(nvt))
+    ALLOCATE(zeta_temp(nvt))
 
     ALLOCATE(y_deriv(nvt))
     ALLOCATE(z_deriv(nvt))
-  !  ALLOCATE(eta_deriv(nvt))
-  !  ALLOCATE(zeta_deriv(nvt))
+    ALLOCATE(eta_deriv(nvt))
+    ALLOCATE(zeta_deriv(nvt))
 
     ! Initialize sum holder values to 0.0
     sum_y = 0.0; sum_z = 0.0; sum_eta = 0.0; sum_zeta = 0.0;
@@ -290,8 +290,8 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     DO i = 1, nvt
         y_temp(i)    = x_0(i)
         z_temp(i)    = x_0(i+nvt)
- !       eta_temp(i)  = x_0(i+2*nvt)
- !       zeta_temp(i) = x_0(i+3*nvt)
+        eta_temp(i)  = x_0(i+2*nvt)
+        zeta_temp(i) = x_0(i+3*nvt)
     END DO
 
     DO i = 1, nvt
@@ -302,6 +302,9 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
                 z_mn  = z_temp(j) - z_temp(i)
                 y_mn  = y_temp(j) - y_temp(i)
                 r_mn  = SQRT(y_mn**2 + z_mn**2)
+
+
+
                 sum_y = sum_y + (GAM(j)/(2.0*pi))*z_mn/r_mn**2
                 sum_z = sum_z - (GAM(j)/(2.0*pi))*y_mn/r_mn**2
             END IF
@@ -319,12 +322,12 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
 
     DEALLOCATE(y_temp)
     DEALLOCATE(z_temp)
-!    DEALLOCATE(eta_temp)
-!    DEALLOCATE(zeta_temp)
+    DEALLOCATE(eta_temp)
+    DEALLOCATE(zeta_temp)
     DEALLOCATE(y_deriv)
     DEALLOCATE(z_deriv)
-!    DEALLOCATE(eta_deriv)
-!    DEALLOCATE(zeta_deriv)
+    DEALLOCATE(eta_deriv)
+    DEALLOCATE(zeta_deriv)
 END FUNCTION VORTEX_DERIV
 !=================================================================================
 #+END_SRC
