@@ -6,7 +6,7 @@
 PROGRAM MAIN
     USE mod_file_io,                ONLY : read_input_data, WRITE_SOLUTION_FILE
     USE mod_global,                 ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, &
-                                           Z, VORT_0, VORT_new, n, m, tau
+                                           Z, VORT_0, VORT_new, n, m, tau, mutual_induction
     USE mod_numerical_routines,     ONLY : DERIVATIVE, RK5, root_function
     USE special_function_interface, ONLY : BESSELJ0, BESSELJ1
     IMPLICIT NONE
@@ -14,7 +14,9 @@ PROGRAM MAIN
     PROCEDURE(root_function) :: BESSEL_ROOT
     PROCEDURE(root_function) :: DISPERSION
     PROCEDURE(root_function) :: VALIDATE
+    PROCEDURE(mutual_induction) :: PHI, PSI
     INTEGER               :: i
+    REAL(KIND=8) :: write_val, dx
     CALL read_input_data
     WRITE(*,*) BESSELJ0(5.d0)
     WRITE(*,*) BESSELJ1(5.d0)
@@ -43,6 +45,19 @@ PROGRAM MAIN
     END DO
 
     CALL WRITE_SOLUTION_FILE
+    OPEN(1,FILE='CROW.x',FORM='UNFORMATTED',ACCESS='STREAM',STATUS='REPLACE',ACTION='WRITE')
+    WRITE(1) nt
+    dx = 5.d0/REAL(nt,KIND=8)
+    DO i = 1, nt
+        write_val = dx*(REAL(i-1,KIND=8))
+        WRITE(*,*) write_val
+        WRITE(1) write_val
+    END DO
+    DO i = 1, nt
+        write_val = PHI(dx*(REAL(i-1,KIND=8)))
+        WRITE(1) write_val
+    END DO
+    CLOSE(1)
 
 END PROGRAM MAIN
 !=================================================================================
@@ -210,8 +225,11 @@ FUNCTION PSI(beta)
     IMPLICIT NONE
     REAL(KIND=8), INTENT(IN) :: beta
     REAL(KIND=8)             :: PSI
-
-    PSI = (beta**2)*BESSELK0(ABS(beta)) + ABS(beta)*BESSELK1(ABS(beta))
+    IF ( beta == 0.d0 ) THEN
+        PSI = 1.d0
+    ELSE
+        PSI = (beta**2)*BESSELK0(ABS(beta)) + ABS(beta)*BESSELK1(ABS(beta))
+    END IF
 END FUNCTION 
 !===========================================================================
 FUNCTION PHI(beta)
@@ -219,8 +237,12 @@ FUNCTION PHI(beta)
     IMPLICIT NONE
     REAL(KIND=8), INTENT(IN) :: beta
     REAL(KIND=8)             :: PHI
-
-    PHI = (1.d0/2.d0)*(beta**2)*BESSELKN(2,ABS(beta))
+    
+    IF ( beta == 0.d0 ) THEN
+        PHI = 1.d0
+    ELSE
+        PHI = (1.d0/2.d0)*(beta**2)*BESSELKN(2,ABS(beta))
+    END IF
 END FUNCTION 
 !===========================================================================
 ! MAIN.F90:1 ends here
