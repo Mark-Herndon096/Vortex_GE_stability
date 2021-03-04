@@ -6,79 +6,100 @@
 PROGRAM MAIN
     USE mod_file_io,                ONLY : read_input_data, WRITE_SOLUTION_FILE
     USE mod_global,                 ONLY : nt, dt, nv, nvt, Y_0, Z_0, GE, GAM, Y, &
-                                           Z, VORT_0, VORT_new, n, m, tau, mutual_induction
-    USE mod_numerical_routines,     ONLY : DERIVATIVE, RK5, root_function
+                                           Z, VORT_0, VORT_new, n, m, tau, ka,    &
+                                           eta, zeta, eta_0, zeta_0
+    USE mod_numerical_routines,     ONLY : DERIVATIVE, RK5
     USE special_function_interface, ONLY : BESSELJ0, BESSELJ1
     IMPLICIT NONE
     PROCEDURE(DERIVATIVE) :: VORTEX_DERIV
-    PROCEDURE(root_function) :: BESSEL_ROOT
-    PROCEDURE(root_function) :: DISPERSION
-    PROCEDURE(root_function) :: VALIDATE
-    PROCEDURE(mutual_induction) :: PHI, PSI
     INTEGER               :: i
-    REAL(KIND=8) :: write_val, dx
+
     CALL read_input_data
-    WRITE(*,*) BESSELJ0(5.d0)
-    WRITE(*,*) BESSELJ1(5.d0)
     IF ( GE == .TRUE. ) THEN
         CALL SET_GROUND_EFFECT
     END IF
+    ka = 1.d0
+    CALL CALC_OMEGA
 
     tau(1) = 0.0
 
     DO i = 1, nvt
-        VORT_0(i)     = Y_0(i)
-        VORT_0(i+nvt) = Z_0(i)
-        Y(i,1)        = Y_0(i)
-        Z(i,1)        = Z_0(i)
-    END DO
+        VORT_0(i)       = Y_0(i)
+        VORT_0(i+nvt  ) = Z_0(i)
+        VORT_0(i+2*nvt) = eta_0(i)
+        VORT_0(i+3*nvt) = zeta_0(i)
+        Y(i,1)          = Y_0(i)
+        Z(i,1)          = Z_0(i)
+        eta(i,1)        = eta_0(i)
+        zeta(i,1)       = zeta_0(i)
+   END DO
 
     DO n = 1, nt
         CALL Rk5(VORT_0,VORT_new,dt,m,VORTEX_DERIV)
         DO i = 1, nvt
             VORT_0(i)       = VORT_new(i)
             VORT_0(i+nvt)   = VORT_new(i+nvt)
+            VORT_0(i+2*nvt) = VORT_new(i+2*nvt)
+            VORT_0(i+3*nvt) = VORT_new(i+3*nvt)
             Y(i,n+1)        = VORT_new(i)
             Z(i,n+1)        = VORT_new(i+nvt)
+            eta(i,n+1)      = VORT_new(i+2*nvt)
+            zeta(i,n+1)     = VORT_new(i+3*nvt)
         END DO
         tau(n+1) = dt*REAL(n,KIND=8)
     END DO
 
     CALL WRITE_SOLUTION_FILE
-    OPEN(1,FILE='CROW.x',FORM='UNFORMATTED',ACCESS='STREAM',STATUS='REPLACE',ACTION='WRITE')
-    WRITE(1) nt
-    dx = 5.d0/REAL(nt,KIND=8)
-    DO i = 1, nt
-        write_val = dx*(REAL(i-1,KIND=8))
-        WRITE(*,*) write_val
-        WRITE(1) write_val
-    END DO
-    DO i = 1, nt
-        write_val = PHI(dx*(REAL(i-1,KIND=8)))
-        WRITE(1) write_val
-    END DO
-    CLOSE(1)
 
 END PROGRAM MAIN
 !=================================================================================
 SUBROUTINE SET_GROUND_EFFECT
-    USE mod_global, ONLY : nv, nvt, Y_0, Z_0, GAM
+    USE mod_global, ONLY : nv, nvt, Y_0, Z_0, GAM, eta_0, zeta_0
     IMPLICIT NONE
     INTEGER :: j
 
     DO j = nv+1, nvt
-        Y_0(j) =  Y_0(j-nv)
-        Z_0(j) = -Z_0(j-nv)
-        GAM(j) = -GAM(j-nv)
+        Y_0(j)    =  Y_0(j-nv)
+        Z_0(j)    = -Z_0(j-nv)
+        eta_0(j)  = eta_0(j-nv)
+        zeta_0(j) = eta_0(j-nv)
+        GAM(j)    = -GAM(j-nv)
     END DO
 
 END SUBROUTINE SET_GROUND_EFFECT
+!=================================================================================
+SUBROUTINE CALC_OMEGA
+    USE mod_numerical_routines, ONLY : BISECTION_METHOD, root_function
+    USE mod_global, ONLY : omega, ka 
+    IMPLICIT NONE
+    PROCEDURE(root_function) :: BESSEL_ROOT
+    PROCEDURE(root_function) :: DISPERSION
+    PROCEDURE(root_function) :: VALIDATE
+    REAL(KIND=8) :: x, y, a, b, tol, eps, bessel_root_val
+    eps = 1E-10;
+    tol = 1E-14;
+    a   = 1.d0;
+    b   = 5.d0;
+
+    CALL BISECTION_METHOD(BESSEL_ROOT, x, a, b, tol)
+    WRITE(*,*) 'Root found at x = ', x
+    bessel_root_val = x;
+    b = bessel_root_val - eps;
+    WRITE(*,*) 'Finding roots of dispersion relation'
+    CALL BISECTION_METHOD(DISPERSION, x, a, b, tol)
+    WRITE(*,*) 'Root found at x = ', x, 'For ka = ', ka
+    WRITE(*,*) 'Validating root by explicit calculation'
+    y = VALIDATE(x)
+    WRITE(*,*) 'The value of f(beta_root) = ', y
+    omega = ((2*ka/SQRT(ka**2 + x**2)) - 1.d0)
+
+END SUBROUTINE CALC_OMEGA
 !=================================================================================
 ! VORTEX_DERIV (y_1, y_2, ... , y_nvt, z_1, z_2, ... z_nvt, eta_1, eta_2, ... , eta_nvt
 !               zeta_1, zeta_2, ... , zeta_nvt)
 !=================================================================================
 FUNCTION VORTEX_DERIV(x_0,m,h,ch)
-    USE mod_global, ONLY : GE, pi, nv, nvt, GAM, mutual_induction
+    USE mod_global, ONLY : GE, pi, nv, nvt, GAM, mutual_induction, ka, omega
     IMPLICIT NONE
     INTEGER,                    INTENT(IN)    :: m
     REAL(KIND=8),               INTENT(IN)    :: h, ch
@@ -110,6 +131,9 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
     REAL(KIND=8)                              :: W2_mn       !< Second term for zeta equation
     REAL(KIND=8)                              :: W3_mn       !< Third term for zeta equation
     REAL(KIND=8)                              :: W4_mn       !< Fourth term for zeta equation
+    REAL(KIND=8)                              :: a, k
+    
+    a = 0.1d0; k = ka/a;
 
     ALLOCATE(y_temp(nvt))
     ALLOCATE(z_temp(nvt))
@@ -140,22 +164,37 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
                 z_mn  = z_temp(j) - z_temp(i)
                 y_mn  = y_temp(j) - y_temp(i)
                 r_mn  = SQRT(y_mn**2 + z_mn**2)
-
+                
 
 
                 sum_y = sum_y + (GAM(j)/(2.0*pi))*z_mn/r_mn**2
                 sum_z = sum_z - (GAM(j)/(2.0*pi))*y_mn/r_mn**2
+
+                V1_mn =  (GAM(j)*y_mn*z_mn/(pi*r_mn**4))*(eta_temp(i) - PHI(k*r_mn)*eta_temp(j)) 
+                V2_mn = -(GAM(j)/(2.d0*pi*r_mn**2))*(1.d0 - (2.d0*z_mn**2)/r_mn**2)*zeta_temp(i)
+                V3_mn =  (GAM(j)/(2.d0*pi*r_mn**2))*(PSI(k*r_mn) - ((2.d0*z_mn**2)/r_mn**2)*PHI(k*r_mn))*zeta_temp(j)
+
+                W1_mn =  -(GAM(j)*y_mn*z_mn/(pi*r_mn**4))*(zeta_temp(i) - PHI(k*r_mn)*zeta_temp(j)) 
+                W2_mn =   (GAM(j)/(2.d0*pi*r_mn**2))*(1.d0 - (2.d0*y_mn**2)/r_mn**2)*zeta_temp(i)
+                W3_mn =  -(GAM(j)/(2.d0*pi*r_mn**2))*(PSI(k*r_mn) - ((2.d0*y_mn**2)/r_mn**2)*PHI(k*r_mn))*zeta_temp(j)
+                
+                sum_eta  = sum_eta + V1_mn + V2_mn + V3_mn
+                sum_zeta = sum_zeta + W1_mn + W2_mn + W3_mn
             END IF
         END DO
-        y_deriv(i) = sum_y
-        z_deriv(i) = sum_z
-        sum_y      = 0.0
-        sum_z      = 0.0
+        y_deriv(i)    = sum_y
+        z_deriv(i)    = sum_z
+        eta_deriv(i)  = sum_eta  + GAM(i)/(2.d0*pi*a**2)
+        zeta_deriv(i) = sum_zeta - GAM(i)/(2.d0*pi*a**2)
+        sum_y         = 0.0
+        sum_z         = 0.0
     END DO
 
     DO i = 1, nvt
-        VORTEX_DERIV(i)     = y_deriv(i)
-        VORTEX_DERIV(i+nvt) = z_deriv(i)
+        VORTEX_DERIV(i)        = y_deriv(i)
+        VORTEX_DERIV(i+nvt)    = z_deriv(i)
+        VORTEX_DERIV(i+2*nvt) = eta_deriv(i)
+        VORTEX_DERIV(i+3*nvt) = zeta_deriv(i)
     END DO
 
     DEALLOCATE(y_temp)

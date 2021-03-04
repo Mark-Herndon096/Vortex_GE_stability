@@ -28,4 +28,5 @@ tau = fread(fid,nt,'double');
 figure(1)
 plot(Y(1,:),Z(1,:),'k--','LineWidth',1.5), hold on
 plot(Y(2,:),Z(2,:),'r--','LineWidth',1.5)
+ylim([-5,5])
 grid on

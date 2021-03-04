@@ -16,6 +16,7 @@ MODULE mod_global
     REAL(KIND=8) :: dt  !< Time step
     REAL(KIND=8) :: a   !< Vortex core radius (Will be an array for unequal core radii in future studies)
     REAL(KIND=8) :: ka  !< Vortex core radius time wavenumber k
+    REAL(KIND=8) :: omega !< Self induced rotation frequency ( !! Assumes equal core radii in this version !! )
 
     ! USER-SPECIFIED INITIAL CONDITIONS
     REAL(KIND=8), ALLOCATABLE, DIMENSION(:) :: Y_0    !< Y initial locations
@@ -73,7 +74,7 @@ SUBROUTINE ALLOCATE_VARIABLES
     ALLOCATE(GAM(nvt))
 
     ! ALLOCATE VORT ARRAYS FOR RK5 INTEGRATOR
-    m = nvt*2
+    m = nvt*4
     ALLOCATE(VORT_0(m))
     ALLOCATE(VORT_new(m))
     ALLOCATE(tau(nt))

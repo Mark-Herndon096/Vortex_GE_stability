@@ -11,13 +11,13 @@ CONTAINS
 !=================================================================================
 SUBROUTINE read_input_data
     USE mod_global, ONLY : nt, dt, nv, nvt, GE, &
-                           Y_0, Z_0, GAM, a,    &
+                           Y_0, Z_0, eta_0, zeta_0, GAM, a, &
                            ALLOCATE_VARIABLES
     IMPLICIT NONE
     INTEGER :: i, i2
 
     NAMELIST /CODE_DATA/ nt, dt, nv, nvt, GE
-    NAMELIST /VORTEX_DATA/ Y_0, Z_0, GAM, a
+    NAMELIST /VORTEX_DATA/ Y_0, Z_0, eta_0, zeta_0, GAM, a
 
     INQUIRE ( FILE = 'input_parameters.dat', SIZE=s )
     ALLOCATE ( CHARACTER(LEN=s) :: input_file_contents )
