@@ -1,4 +1,3 @@
-! [[file:PROJECT.org::*INPUT PARAMETERS.DAT][INPUT PARAMETERS.DAT:1]]
 ! Input file for vortex filament method solver
 ! Set nv and nvt to same value if not studying ground effect case
 ! Set nvt to 2*nv for ground effect configuration
