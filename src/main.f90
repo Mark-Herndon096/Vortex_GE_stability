@@ -18,8 +18,8 @@ PROGRAM MAIN
     IF ( GE == .TRUE. ) THEN
         CALL SET_GROUND_EFFECT
     END IF
-    ka = 0.3d0
-    CALL CALC_OMEGA
+    ka = 0.6d0
+!    CALL CALC_OMEGA
 
     tau(1) = 0.0
 
@@ -188,8 +188,8 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
         END DO
         y_deriv(i)    = sum_y
         z_deriv(i)    = sum_z
-        eta_deriv(i)  = sum_eta  + GAM(i)/(2.d0*pi*a**2)*0.02d0*zeta_temp(i) 
-        zeta_deriv(i) = sum_zeta - GAM(i)/(2.d0*pi*a**2)*0.02d0*eta_temp(i) 
+        eta_deriv(i)  = sum_eta  + (GAM(i)/(2.d0*pi*a**2))*0.15d0*zeta_temp(i) 
+        zeta_deriv(i) = sum_zeta - (GAM(i)/(2.d0*pi*a**2))*0.15d0*eta_temp(i) 
         sum_y         = 0.d0
         sum_z         = 0.d0
         sum_eta       = 0.d0
@@ -272,6 +272,8 @@ FUNCTION PSI(beta)
     REAL(KIND=8)             :: PSI
     IF ( beta == 0.d0 ) THEN
         PSI = 1.d0
+    ELSE IF ( beta .GE. 600 ) THEN
+        PSI = 0.d0
     ELSE
         PSI = (beta**2)*BESSELK0(ABS(beta)) + ABS(beta)*BESSELK1(ABS(beta))
     END IF
@@ -282,9 +284,10 @@ FUNCTION PHI(beta)
     IMPLICIT NONE
     REAL(KIND=8), INTENT(IN) :: beta
     REAL(KIND=8)             :: PHI
-    
     IF ( beta == 0.d0 ) THEN
         PHI = 1.d0
+    ELSE IF ( beta .GE. 600 ) THEN
+        PHI = 0.d0
     ELSE
         PHI = (beta**2)*BESSELKN(2,ABS(beta))
     END IF

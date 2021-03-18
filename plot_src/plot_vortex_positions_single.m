@@ -82,9 +82,9 @@ xlim([0,tau(end)])
 %%
 figure(3)
 plot(tau,eta(1,:),'r--','LineWidth',1.5), hold on
-plot(tau,eta(2,:),'r-','LineWidth',1.5), hold on
-plot(tau,zeta(1,:),'ko','LineWidth',0.25), hold on
-plot(tau,zeta(2,:),'k-','LineWidth',1.5), hold on
+%plot(tau,eta(2,:),'r-','LineWidth',1.5), hold on
+%plot(tau,zeta(1,:),'ko','LineWidth',0.25), hold on
+%plot(tau,zeta(2,:),'k-','LineWidth',1.5), hold on
 k2 = xline(5,'b--','LineWidth',3);
 xx = [0.45 0.48];
 yy = [0.15 0.15];
