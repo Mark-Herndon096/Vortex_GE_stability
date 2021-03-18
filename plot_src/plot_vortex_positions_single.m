@@ -57,7 +57,7 @@ ylim([-5,5])
 title('Vortex trajectory in and out of ground effect')
 xlabel('x')
 ylabel('y')
-legend('Vortex 1','Vortex 2','Vortex 1 GE', 'Vortex 2 GE')
+legend('Vortex 1','Vortex 2')
 grid on
 
 %% Plot perturbation amplitudes
@@ -73,7 +73,7 @@ plot(tau,r1,'k-','LineWidth',1.5), hold on
 plot(tau,r2,'r-','LineWidth',1.5), hold on
 k2 = xline(5,'b--','LineWidth',3);
 xx = [0.45 0.48];
-yy = [0.35 0.35];
+yy = [0.85 0.85];
 annotation('textarrow',xx,yy,'String','Time to reach wall boundary')
 title('Perturbation Amplitude')
 xlabel('Time [t\Gamma/2\pib]')
@@ -83,14 +83,14 @@ xlim([0,tau(end)])
 figure(3)
 plot(tau,eta(1,:),'r--','LineWidth',1.5), hold on
 plot(tau,eta(2,:),'r-','LineWidth',1.5), hold on
-plot(tau,zeta(1,:),'k--','LineWidth',1.5), hold on
+plot(tau,zeta(1,:),'ko','LineWidth',0.25), hold on
 plot(tau,zeta(2,:),'k-','LineWidth',1.5), hold on
 k2 = xline(5,'b--','LineWidth',3);
 xx = [0.45 0.48];
-yy = [0.35 0.35];
+yy = [0.15 0.15];
 annotation('textarrow',xx,yy,'String','Time to reach wall boundary')
 title('Perturbation Amplitude Components')
 xlabel('Time [t\Gamma/2\pib]')
 ylabel('Amplitude [r/b]')
 xlim([0,tau(end)])
-
+legend('eta vortex 1', 'eta vortex 2', 'zeta vortex 1', 'zeta vortex 2')

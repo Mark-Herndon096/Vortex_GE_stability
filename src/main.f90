@@ -62,7 +62,7 @@ SUBROUTINE SET_GROUND_EFFECT
         Y_0(j)    =  Y_0(j-nv)
         Z_0(j)    = -Z_0(j-nv)
         eta_0(j)  = eta_0(j-nv)
-        zeta_0(j) = eta_0(j-nv)
+        zeta_0(j) = -zeta_0(j-nv)
         GAM(j)    = -GAM(j-nv)
     END DO
 
@@ -188,8 +188,8 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
         END DO
         y_deriv(i)    = sum_y
         z_deriv(i)    = sum_z
-        eta_deriv(i)  = sum_eta  + GAM(i)/(2.d0*pi*a**2)*0.01d0*zeta_temp(i) 
-        zeta_deriv(i) = sum_zeta - GAM(i)/(2.d0*pi*a**2)*0.01d0*eta_temp(i) 
+        eta_deriv(i)  = sum_eta  + GAM(i)/(2.d0*pi*a**2)*0.02d0*zeta_temp(i) 
+        zeta_deriv(i) = sum_zeta - GAM(i)/(2.d0*pi*a**2)*0.02d0*eta_temp(i) 
         sum_y         = 0.d0
         sum_z         = 0.d0
         sum_eta       = 0.d0

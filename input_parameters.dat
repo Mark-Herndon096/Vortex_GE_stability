@@ -16,8 +16,8 @@
 &VORTEX_DATA
   Y_0 = -0.75, 0.75    !< Y_0 coordinates of vortex 1, vortex 2, ... vortex nv
   Z_0 =  5.0,  5.0     !< Z_0 coorindates of vortex 1, vortex 2, ... vortex nv
-  eta_0  = -0.05, 0.05 !< eta_0 coordinates of vortex 1, vortex 2, ... vortex nv
-  zeta_0 = 0.05, 0.05  !< zeta_0 coorindates of vortex 1, vortex 2, ... vortex nv
+  eta_0  = -0.1, 0.1 !< eta_0 coordinates of vortex 1, vortex 2, ... vortex nv
+  zeta_0 = 0.1, 0.1  !< zeta_0 coorindates of vortex 1, vortex 2, ... vortex nv
   GAM = -1.0,  1.0     !< Circulation orientation for real vortices -- proper strength included later
   a   =  0.1           !< Vortex core radius (Will be array for unequal radius in future studies)
 /&END
