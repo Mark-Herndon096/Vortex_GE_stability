@@ -170,26 +170,30 @@ FUNCTION VORTEX_DERIV(x_0,m,h,ch)
                 sum_y = sum_y + (GAM(j)/(2.0*pi))*z_mn/r_mn**2
                 sum_z = sum_z - (GAM(j)/(2.0*pi))*y_mn/r_mn**2
 
-                V1_mn =  (GAM(j)/(2.d0*pi*r_mn**2))*((2.d0*z_mn/r_mn**2) - 1.d0)*zeta_temp(i)
-                V2_mn =  (GAM(j)/(2.d0*pi*r_mn**2))*(PSI(k*r_mn) - (z_mn/r_mn**2)*PHI(k*r_mn))*zeta_temp(j)
-                V3_mn =  (GAM(j)/(2.d0*pi*r_mn**4))*(2.d0*y_mn*z_mn)*eta_temp(i)
-                V4_mn = -(GAM(j)*y_mn*z_mn/(2.d0*pi*r_mn**4))*PHI(k*r_mn)*eta_temp(j)
+                V1_mn =  (GAM(j)/(2.d0*pi))*(2.d0*(z_mn**2)/r_mn**4 - 1/r_mn**2)*zeta_temp(i)
+                W1_mn = -(GAM(j)/(2.d0*pi))*(2.d0*(y_mn**2)/r_mn**4 - 1/r_mn**2)*eta_temp(i)
 
-                W1_mn = -(GAM(j)/(2.d0*pi*r_mn**2))*((2.d0*y_mn/r_mn**2) - 1.d0)*eta_temp(i)
-                W2_mn = -(GAM(j)/(2.d0*pi*r_mn**2))*(PSI(k*r_mn) - (y_mn/r_mn**2)*PHI(k*r_mn))*eta_temp(j)
-                W3_mn = -(GAM(j)/(2.d0*pi*r_mn**4))*(2.d0*y_mn*z_mn)*zeta_temp(i)
-                W4_mn =  (GAM(j)*y_mn*z_mn/(2.d0*pi*r_mn**4))*PHI(k*r_mn)*zeta_temp(j)
+                V2_mn =  (GAM(j)/(2.d0*pi*r_mn**2))*(PSI(k*r_mn) - (z_mn/r_mn**2)*PHI(k*r_mn))*zeta_temp(i)
+                W2_mn = -(GAM(j)/(2.d0*pi*r_mn**2))*(PSI(k*r_mn) - (z_mn/r_mn**2)*PHI(k*r_mn))*eta_temp(i)
 
-                sum_eta  = sum_eta + V1_mn + V2_mn + V3_mn + V4_mn
-                sum_zeta = sum_zeta + W1_mn + W2_mn + W3_mn + W4_mn
+                V3_mn =  (GAM(j)/(pi*r_mn**4))*y_mn*z_mn*eta_temp(i)
+                W3_mn = -(GAM(j)/(pi*r_mn**4))*y_mn*z_mn*zeta_temp(i)
+
+                V4_mn = (GAM(j)/(2.d0*pi*r_mn**2))*(-y_mn*z_mn/r_mn**2)*PHI(k*r_mn)*eta_temp(j)
+                W4_mn = (GAM(j)/(2.d0*pi*r_mn**2))*(y_mn*z_mn/r_mn**2)*PHI(k*r_mn)*zeta_temp(j)
+
+                sum_eta  = sum_eta  + V1_mn + V3_mn + V4_mn + V2_mn
+                sum_zeta = sum_zeta + W1_mn + W3_mn + W4_mn + W2_mn
             END IF
         END DO
         y_deriv(i)    = sum_y
         z_deriv(i)    = sum_z
-        eta_deriv(i)  = sum_eta  + GAM(i)/(2.d0*pi*a**2)
-        zeta_deriv(i) = sum_zeta - GAM(i)/(2.d0*pi*a**2)
-        sum_y         = 0.0
-        sum_z         = 0.0
+        eta_deriv(i)  = sum_eta  + GAM(i)/(2.d0*pi*a**2)*0.01d0*zeta_temp(i) 
+        zeta_deriv(i) = sum_zeta - GAM(i)/(2.d0*pi*a**2)*0.01d0*eta_temp(i) 
+        sum_y         = 0.d0
+        sum_z         = 0.d0
+        sum_eta       = 0.d0
+        sum_zeta      = 0.d0
     END DO
 
     DO i = 1, nvt

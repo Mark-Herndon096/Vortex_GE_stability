@@ -3,13 +3,12 @@
 % Lehigh University, Department of Mechanical Engineering and Mechanics
 clc; clear all; close all;
 
-dir   = '/home/markherndon/Vortex_Codes/FORTRAN/DATA/';
+dir   = '/home/markherndon/Vortex_Codes/FORTRAN/DATA2/';
 fname = sprintf('%svortices.x',dir);
 
 fname2= sprintf('%svorticesGE.x',dir);
 
 fid = fopen(fname,'r','ieee-le');
-
 fid2 = fopen(fname2,'r','ieee-le');
 
 nvt = fread(fid,1,'int');
@@ -56,25 +55,22 @@ tau = fread(fid,nt,'double');
 tau = tau * (1/(2*pi*1.5));
 %% Plot Vortex trajectories
 figure(1)
-plot(Y(1,:),Z(1,:),'k--','LineWidth',1.5), hold on
-plot(Y(2,:),Z(2,:),'r--','LineWidth',1.5), hold on
+plot(Y(1,1),Z(1,1),'k*','LineWidth',10), hold on
+plot(Y(2,1),Z(2,1),'r*','LineWidth',10), hold on
+plot(Y(1,:),Z(1,:),'g+','LineWidth',1.75), hold on
+plot(Y(2,:),Z(2,:),'b+','LineWidth',1.75), hold on
 plot(Y2(1,:),Z2(1,:),'k-','LineWidth',1.5)
 plot(Y2(2,:),Z2(2,:),'r-','LineWidth',1.5)
 k = yline(0, 'b--', 'LineWidth', 3);
 xx1 = [0.2 0.2];
-yy1 = [0.6 0.53];
+yy1 = [0.4 0.3];
 annotation('textarrow',xx1,yy1,'String','Wall boundary')
-xx2 = [0.5175 0.5175];
-yy2 = [0.8 0.7];
-annotation('textarrow',xx2,yy2,'String','Vortex trajectory')
-xx3 = [0.5175 0.5175];
-yy3 = [0.45 0.35];
-annotation('textarrow',xx3,yy3,'String','No GE trajectory')
-ylim([-5,5])
+
+ylim([-3,10])
 title('Vortex trajectory in and out of ground effect')
 xlabel('x')
 ylabel('y')
-legend('Vortex 1','Vortex 2','Vortex 1 GE', 'Vortex 2 GE')
+legend('Vortex 1 start position','Vortex 2 start position', 'Vortex 1','Vortex 2','Vortex 1 GE', 'Vortex 2 GE')
 grid on
 
 %% Plot perturbation amplitudes
@@ -103,34 +99,4 @@ xlabel('Time [t\Gamma/2\pib]')
 ylabel('Amplitude [r/b]')
 xlim([0,tau(end)])
 legend('Vortex 1','Vortex 2','Vortex 1 GE', 'Vortex 2 GE')
-%%
-figure(4)
-plot(tau,eta(1,:),'k--','LineWidth',1.5), hold on
-plot(tau,zeta(1,:),'r--','LineWidth',1.5), hold on
-plot(tau,eta(2,:),'k-','LineWidth',1.5), hold on
-plot(tau,zeta(2,:),'r-','LineWidth',1.5)
-k2 = xline(5,'b--','LineWidth',3);
-xx = [0.45 0.48];
-yy = [0.35 0.35];
-annotation('textarrow',xx,yy,'String','Time to reach wall boundary')
-title('Perturbation Amplitude components for free vortices')
-xlabel('Time [t\Gamma/2\pib]')
-ylabel('Amplitude [r/b]')
-xlim([0,tau(end)])
-legend('eta 1','zeta 1', 'eta 2', 'zeta 2')
-figure(3)
-plot(tau,eta2(1,:),'k--','LineWidth',1.5), hold on
-plot(tau,zeta2(1,:),'r--','LineWidth',1.5), hold on
-plot(tau,eta2(2,:),'k-','LineWidth',1.5), hold on
-plot(tau,zeta2(2,:),'r-','LineWidth',1.5)
-k2 = xline(5,'b--','LineWidth',3);
-xx = [0.45 0.48];
-yy = [0.35 0.35];
-annotation('textarrow',xx,yy,'String','Time to reach wall boundary')
-title('Perturbation Amplitude components for constrained vortices')
-xlabel('Time [t\Gamma/2\pib]')
-ylabel('Amplitude [r/b]')
-xlim([0,tau(end)])
-legend('eta 1','zeta 1', 'eta 2', 'zeta 2')
-
 

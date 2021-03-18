@@ -9,7 +9,6 @@ fname = sprintf('%svortices.x',dir);
 fname2= sprintf('%svorticesGE.x',dir);
 
 fid = fopen(fname,'r','ieee-le');
-
 fid2 = fopen(fname2,'r','ieee-le');
 
 nvt = fread(fid,1,'int');
@@ -104,7 +103,7 @@ ylabel('Amplitude [r/b]')
 xlim([0,tau(end)])
 legend('Vortex 1','Vortex 2','Vortex 1 GE', 'Vortex 2 GE')
 %%
-figure(4)
+figure(3)
 plot(tau,eta(1,:),'k--','LineWidth',1.5), hold on
 plot(tau,zeta(1,:),'r--','LineWidth',1.5), hold on
 plot(tau,eta(2,:),'k-','LineWidth',1.5), hold on
@@ -113,24 +112,10 @@ k2 = xline(5,'b--','LineWidth',3);
 xx = [0.45 0.48];
 yy = [0.35 0.35];
 annotation('textarrow',xx,yy,'String','Time to reach wall boundary')
-title('Perturbation Amplitude components for free vortices')
+title('Perturbation Amplitude')
 xlabel('Time [t\Gamma/2\pib]')
 ylabel('Amplitude [r/b]')
 xlim([0,tau(end)])
-legend('eta 1','zeta 1', 'eta 2', 'zeta 2')
-figure(3)
-plot(tau,eta2(1,:),'k--','LineWidth',1.5), hold on
-plot(tau,zeta2(1,:),'r--','LineWidth',1.5), hold on
-plot(tau,eta2(2,:),'k-','LineWidth',1.5), hold on
-plot(tau,zeta2(2,:),'r-','LineWidth',1.5)
-k2 = xline(5,'b--','LineWidth',3);
-xx = [0.45 0.48];
-yy = [0.35 0.35];
-annotation('textarrow',xx,yy,'String','Time to reach wall boundary')
-title('Perturbation Amplitude components for constrained vortices')
-xlabel('Time [t\Gamma/2\pib]')
-ylabel('Amplitude [r/b]')
-xlim([0,tau(end)])
-legend('eta 1','zeta 1', 'eta 2', 'zeta 2')
+legend('eta 1','zeta 2','eta 1 GE', 'Vortex 1 GE')
 
 
